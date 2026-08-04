@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% block title %}Reporte de inventario — Tópico UNH{% endblock %}
+{% block header %}Reporte de inventario{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card stat-card info">
+            <div class="card-body">
+                <div class="text-muted small">Total de ítems</div>
+                <div class="stat-valor">{{ total_items }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card critico">
+            <div class="card-body">
+                <div class="text-muted small">Con stock crítico</div>
+                <div class="stat-valor">{{ criticos|length }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stat-card ok">
+            <div class="card-body">
+                <div class="text-muted small">Valor del inventario (S/)</div>
+                <div class="stat-valor">{{ valor_inventario }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header bg-white fw-bold"><i class="bi bi-exclamation-triangle"></i> ítems con stock crítico</div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr><th>Nombre</th><th>Stock actual</th><th>Mínimo</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for m in criticos %}
+                        <tr>
+                            <td class="fw-semibold">{{ m.nombre }}</td>
+                            <td><span class="badge text-bg-danger">{{ m.stock_actual }}</span></td>
+                            <td>{{ m.stock_minimo }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="3" class="text-center text-muted py-4">Sin ítems críticos.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header bg-white fw-bold"><i class="bi bi-arrow-left-right"></i> Resumen de movimientos</div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr><th>Tipo</th><th>N° de movimientos</th><th>Cantidad total</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for mv in movimientos %}
+                        <tr>
+                            <td>
+                                {% if mv.tipo == 'ENTRADA' %}<span class="badge text-bg-success">Entrada</span>
+                                {% elif mv.tipo == 'SALIDA' %}<span class="badge text-bg-danger">Salida</span>
+                                {% else %}<span class="badge text-bg-secondary">Ajuste</span>{% endif %}
+                            </td>
+                            <td>{{ mv.total }}</td>
+                            <td>{{ mv.cantidad_total }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="3" class="text-center text-muted py-4">Sin movimientos registrados.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

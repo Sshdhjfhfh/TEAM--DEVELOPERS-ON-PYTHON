@@ -1,0 +1,30 @@
+{% load static %}
+{% load static %}
+<div class="auth-wrapper">
+    <div class="card auth-card">
+        <div class="card-body p-4">
+            <div class="text-center mb-4">
+                <img src="{% static 'img/unh-logo.png' %}" alt="Logo UNH" height="80" class="mb-2">
+                <h4 class="fw-bold">Portal de Estudiantes</h4>
+                <p class="text-muted">Tópico de la Universidad Nacional de Huancavelica</p>
+            </div>
+            <p class="text-muted small text-center">
+                Para registrarse, ingrese el código de estudiante y el DNI tal como figuran
+                en el padrón de matriculados de la universidad.
+            </p>
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+            {% endif %}
+            <form method="post" novalidate>
+                {% csrf_token %}
+                {% include 'partials/_form.html' %}
+                <button type="submit" class="btn btn-primary w-100">Verificar datos</button>
+            </form>
+            <hr>
+            <p class="text-center mt-2 mb-0 small">
+                ¿Eres personal del Tópico?
+                <a href="{% url 'accounts:login' %}">Inicia sesión aquí</a>
+            </p>
+        </div>
+    </div>
+</div>

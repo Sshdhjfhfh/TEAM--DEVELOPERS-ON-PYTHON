@@ -1,0 +1,35 @@
+{% load static %}
+{% load static %}
+<div class="auth-wrapper">
+    <div class="card auth-card">
+        <div class="card-body p-4">
+            <div class="text-center mb-4">
+                <img src="{% static 'img/unh-logo.png' %}" alt="Logo UNH" height="80" class="mb-2">
+                <h4 class="fw-bold">Completar registro</h4>
+                <p class="text-muted">Datos validados del padrón de matrícula</p>
+            </div>
+
+            <div class="alert alert-light border small">
+                <dl class="row detalle-lista mb-0">
+                    <dt class="col-sm-4">Código</dt>
+                    <dd class="col-sm-8 fw-semibold">{{ estudiante.codigo }}</dd>
+                    <dt class="col-sm-4">Nombres</dt>
+                    <dd class="col-sm-8">{{ estudiante.nombre_completo }}</dd>
+                    <dt class="col-sm-4">Escuela</dt>
+                    <dd class="col-sm-8">{{ estudiante.get_escuela_display }}</dd>
+                    <dt class="col-sm-4">Ciclo</dt>
+                    <dd class="col-sm-8">{{ estudiante.ciclo }}°</dd>
+                </dl>
+            </div>
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+            {% endif %}
+            <form method="post" novalidate>
+                {% csrf_token %}
+                {% include 'partials/_form.html' %}
+                <button type="submit" class="btn btn-primary w-100">Crear mi cuenta</button>
+            </form>
+        </div>
+    </div>
+</div>

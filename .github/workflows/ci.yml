@@ -1,0 +1,39 @@
+name: CI — Tópico UNH
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  tests:
+    name: Pruebas automatizadas
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.12', '3.13']
+
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Verificar configuración de Django
+        run: python manage.py check
+
+      - name: Verificar migraciones pendientes
+        run: python manage.py makemigrations --check --dry-run
+
+      - name: Ejecutar pruebas
+        run: pytest

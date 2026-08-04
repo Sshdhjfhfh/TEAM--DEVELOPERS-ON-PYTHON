@@ -1,3 +1,3 @@
 from django.contrib import admin
 
-# Register your models here.
+# No hay modelos propios en la app de API.

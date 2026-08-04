@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard — Tópico UNH{% endblock %}
+{% block header %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <form method="get" class="d-flex gap-2">
+        <select name="periodo" class="form-select" onchange="this.form.submit()">
+            <option value="hoy" {% if periodo == 'hoy' %}selected{% endif %}>Hoy</option>
+            <option value="semana" {% if periodo == 'semana' %}selected{% endif %}>Últimos 7 días</option>
+            <option value="mes" {% if periodo == 'mes' %}selected{% endif %}>Últimos 30 días</option>
+        </select>
+    </form>
+    <div>
+        <a href="{% url 'atenciones:crear' %}" class="btn btn-primary"><i class="bi bi-plus"></i> Nueva atención</a>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="text-muted small"><i class="bi bi-people"></i> Total pacientes</div>
+                <div class="stat-valor">{{ total_pacientes }}</div>
+                <small class="text-success"><i class="bi bi-arrow-up"></i> {{ pacientes_nuevos }} nuevos en el periodo</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card ok">
+            <div class="card-body">
+                <div class="text-muted small"><i class="bi bi-clipboard2-pulse"></i> Atenciones del periodo</div>
+                <div class="stat-valor">{{ atenciones_periodo }}</div>
+                <small class="text-muted">{{ atenciones_hoy }} hoy</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="text-muted small"><i class="bi bi-hourglass-split"></i> En espera</div>
+                <div class="stat-valor text-danger">{{ en_espera }}</div>
+                <small class="text-muted">pacientes en cola</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card info">
+            <div class="card-body">
+                <div class="text-muted small"><i class="bi bi-box-seam"></i> Stock crítico</div>
+                <div class="stat-valor">{{ medicamentos_criticos|length }}</div>
+                <small class="text-warning">medicamentos bajo mínimo</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card h-100">
+            <div class="card-header bg-white fw-bold"><i class="bi bi-graph-up"></i> Atenciones por día</div>
+            <div class="card-body">
+                <canvas id="graficoAtenciones" height="120"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card h-100">
+            <div class="card-header bg-white fw-bold"><i class="bi bi-pie-chart"></i> Triage del periodo</div>
+            <div class="card-body">
+                <canvas id="graficoTriage" height="120"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-1">
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header bg-white fw-bold"><i class="bi bi-clock-history"></i> Últimas atenciones</div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr><th>#</th><th>Paciente</th><th>Motivo</th><th>Triage</th><th>Estado</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                        {% for a in ultimas_atenciones %}
+                        <tr>
+                            <td>{{ a.id }}</td>
+                            <td class="fw-semibold">{{ a.paciente.nombre_completo }}</td>
+                            <td>{{ a.motivo_consulta|truncatechars:30 }}</td>
+                            <td><span class="badge badge-triage-{{ a.nivel_triage|lower }}">{{ a.get_nivel_triage_display }}</span></td>
+                            <td class="estado-{{ a.estado|lower }}">{{ a.get_estado_display }}</td>
+                            <td><a href="{% url 'atenciones:detalle' a.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></a></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="6" class="text-center text-muted py-4">Sin atenciones registradas.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-header bg-white fw-bold"><i class="bi bi-exclamation-triangle"></i> Stock crítico</div>
+            <ul class="list-group list-group-flush">
+                {% for m in medicamentos_criticos %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ m.nombre }}
+                    <span class="badge text-bg-danger">stock {{ m.stock_actual }} / mín. {{ m.stock_minimo }}</span>
+                </li>
+                {% empty %}
+                <li class="list-group-item text-muted text-center py-4">Sin alertas de stock.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+const datosDias = {{ atenciones_por_dia_json|safe }};
+new Chart(document.getElementById('graficoAtenciones'), {
+    type: 'bar',
+    data: {
+        labels: datosDias.map(d => d.dia),
+        datasets: [{
+            label: 'Atenciones',
+            data: datosDias.map(d => d.total),
+            backgroundColor: '#0d6efd'
+        }]
+    },
+    options: { responsive: true, plugins: { legend: { display: false } } }
+});
+
+const datosTriage = {{ triage_json|safe }};
+new Chart(document.getElementById('graficoTriage'), {
+    type: 'doughnut',
+    data: {
+        labels: Object.keys(datosTriage),
+        datasets: [{
+            data: Object.values(datosTriage),
+            backgroundColor: ['#dc3545', '#fd7e14', '#ffc107', '#198754', '#0dcaf0']
+        }]
+    },
+    options: { responsive: true }
+});
+</script>
+{% endblock %}

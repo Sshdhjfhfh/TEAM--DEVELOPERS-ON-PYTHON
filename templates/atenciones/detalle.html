@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block title %}Atención #{{ atencion.id }} — Tópico UNH{% endblock %}
+{% block header %}Atención #{{ atencion.id }}{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header bg-white fw-bold d-flex justify-content-between">
+                <span><i class="bi bi-clipboard2-pulse"></i> Datos de la atención</span>
+                <span>
+                    <a href="{% url 'atenciones:editar' atencion.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i> Editar</a>
+                    <a href="{% url 'atenciones:signos' atencion.pk %}" class="btn btn-sm btn-outline-success"><i class="bi bi-activity"></i> Signos vitales</a>
+                </span>
+            </div>
+            <div class="card-body">
+                <dl class="row detalle-lista">
+                    <dt class="col-sm-4">Paciente</dt>
+                    <dd class="col-sm-8"><a href="{% url 'pacientes:detalle' atencion.paciente.pk %}" class="fw-semibold">{{ atencion.paciente.nombre_completo }}</a></dd>
+                    <dt class="col-sm-4">DNI</dt>
+                    <dd class="col-sm-8">{{ atencion.paciente.dni }}</dd>
+                    <dt class="col-sm-4">Fecha</dt>
+                    <dd class="col-sm-8">{{ atencion.fecha_atencion|date:'d/m/Y H:i' }}</dd>
+                    <dt class="col-sm-4">Triage</dt>
+                    <dd class="col-sm-8"><span class="badge badge-triage-{{ atencion.nivel_triage|lower }}">{{ atencion.get_nivel_triage_display }}</span></dd>
+                    <dt class="col-sm-4">Estado</dt>
+                    <dd class="col-sm-8"><span class="estado-{{ atencion.estado|lower }}">{{ atencion.get_estado_display }}</span></dd>
+                    <dt class="col-sm-4">Médico</dt>
+                    <dd class="col-sm-8">{{ atencion.medico_nombre }}</dd>
+                </dl>
+                <hr>
+                <h6>Motivo de consulta</h6>
+                <p>{{ atencion.motivo_consulta|linebreaksbr }}</p>
+                {% if atencion.anamnesis %}
+                    <h6>Anamnesis</h6>
+                    <p>{{ atencion.anamnesis|linebreaksbr }}</p>
+                {% endif %}
+                {% if atencion.diagnostico %}
+                    <h6>Diagnóstico</h6>
+                    <p>{{ atencion.diagnostico|linebreaksbr }}</p>
+                {% endif %}
+                {% if atencion.tratamiento %}
+                    <h6>Tratamiento / indicaciones</h6>
+                    <p>{{ atencion.tratamiento|linebreaksbr }}</p>
+                {% endif %}
+                {% if atencion.observaciones %}
+                    <h6>Observaciones</h6>
+                    <p>{{ atencion.observaciones|linebreaksbr }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-header bg-white fw-bold"><i class="bi bi-activity"></i> Signos vitales</div>
+            <div class="card-body">
+                {% if signos %}
+                <dl class="row detalle-lista mb-3">
+                    <dt class="col-sm-7">Temperatura</dt><dd class="col-sm-5">{{ signos.temperatura|default:'—' }} °C</dd>
+                    <dt class="col-sm-7">Presión arterial</dt><dd class="col-sm-5">{{ signos.presion_arterial }}</dd>
+                    <dt class="col-sm-7">Pulso</dt><dd class="col-sm-5">{{ signos.pulso|default:'—' }} lpm</dd>
+                    <dt class="col-sm-7">Frec. respiratoria</dt><dd class="col-sm-5">{{ signos.frecuencia_respiratoria|default:'—' }} rpm</dd>
+                    <dt class="col-sm-7">Saturación O₂</dt><dd class="col-sm-5">{{ signos.saturacion_oxigeno|default:'—' }} %</dd>
+                    <dt class="col-sm-7">Peso</dt><dd class="col-sm-5">{{ signos.peso|default:'—' }} kg</dd>
+                    <dt class="col-sm-7">Talla</dt><dd class="col-sm-5">{{ signos.talla|default:'—' }} cm</dd>
+                    <dt class="col-sm-7">Registrado</dt><dd class="col-sm-5">{{ signos.registrado_en|date:'d/m/Y H:i' }}</dd>
+                </dl>
+                {% else %}
+                <p class="text-muted">Aún no se registraron signos vitales.</p>
+                {% endif %}
+                <a href="{% url 'atenciones:signos' atencion.pk %}" class="btn btn-sm btn-success">
+                    <i class="bi bi-plus-circle"></i> {% if signos %}Actualizar{% else %}Registrar{% endif %}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
