@@ -77,12 +77,30 @@ flujo completo de registro en el portal.
 ## 5. Pruebas
 
 ```bash
-python -m pytest          # ejecuta las 58 pruebas
+python -m pytest          # ejecuta las 83 pruebas
 python -m pytest -v       # modo detallado
 python manage.py check    # verifica la configuración
 ```
 
-## 6. Solución de problemas
+## 6. Recordatorios de citas
+
+El comando `recordar_citas` envía un correo de recordatorio a los estudiantes
+con cita programada para la próxima mañana (24 horas antes):
+
+```bash
+python manage.py recordar_citas                 # envía los recordatorios
+python manage.py recordar_citas --dry-run       # solo simula (no envía)
+python manage.py recordar_citas --horas 48      # anticipación de 48 horas
+```
+
+Programarlo en Windows (Programador de tareas) o con cron en Linux:
+
+```bash
+# Cron: cada día a las 08:00
+0 8 * * * cd /ruta/al/proyecto && venv/bin/python manage.py recordar_citas
+```
+
+## 7. Solución de problemas
 
 | Problema | Solución |
 |---|---|
@@ -92,7 +110,7 @@ python manage.py check    # verifica la configuración
 | Puertos ocupados | Usar otro puerto: `python manage.py runserver 127.0.0.1:8001`. |
 | No se ven los estilos/logos | Ejecutar `python manage.py collectstatic` y verificar que `static/` contenga `css/estilos.css` e `img/unh-logo.png`. |
 
-## 7. Despliegue (planificado, Sprint 5)
+## 8. Despliegue (planificado, Sprint 6)
 
 La migración a PostgreSQL se hará configurando `DATABASES` en `settings.py` vía
 variables de entorno (`DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`),

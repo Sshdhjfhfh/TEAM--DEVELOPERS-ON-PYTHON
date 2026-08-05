@@ -104,12 +104,33 @@ citas vigentes.
   **Cancelar**.
 - Si la cita fue atendida, se muestra un enlace a la atención generada.
 
+### 6.5 Estado de mi atención (cola en tiempo real)
+
+- Desde el menú **Estado de mi atención** el estudiante consulta su turno.
+- Muestra la posición en la cola del día, la gravedad (triage) y la hora de
+  llegada, junto a las personas que faltan antes de su turno.
+- La cola prioriza emergencias; refrescar la página para actualizarla.
+
+### 6.6 Mi historia clínica
+
+- Desde el menú **Mi historia clínica** el estudiante consulta sus atenciones
+  previas: fecha, triage, motivo, diagnóstico, tratamiento y los medicamentos
+  recetados.
+
 ## 7. Agenda de citas (personal de salud)
 
 1. Ir a **Agenda de citas** en el menú.
 2. Filtrar por estado, fecha o buscar por código/nombre del estudiante.
 3. En una cita vigente pulsar **Atender**: se crea automáticamente una
    atención médica con la ficha del estudiante y la cita pasa a **Atendida**.
+
+### 7.1 Receta médica (con descuento de stock)
+
+1. Abrir el detalle de una atención.
+2. En el bloque **Receta médica**, elegir el medicamento, la cantidad y las
+   indicaciones, y pulsar **Recetar**.
+3. El stock del medicamento se descuenta automáticamente del inventario; no se
+   puede superar la cantidad disponible.
 
 ## 8. API REST
 
