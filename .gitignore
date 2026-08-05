@@ -220,3 +220,5 @@ nemesis_v42.py
 
 # Streamlit
 .streamlit/secrets.toml
+.vercel
+.env*

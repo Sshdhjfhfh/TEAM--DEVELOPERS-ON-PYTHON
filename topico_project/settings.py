@@ -94,16 +94,68 @@ WSGI_APPLICATION = 'topico_project.wsgi.application'
 
 # En desarrollo se usa SQLite (archivo db.sqlite3). Para producción (Vercel,
 # Render, etc.) se usa PostgreSQL configurado por variables de entorno.
-if os.environ.get('DB_ENGINE') == 'postgres':
+# Vercel inyecta DATABASE_URL / POSTGRES_* al conectar la integración de Neon.
+def _parse_db_url(url):
+    """Parsea una URL tipo postgresql://usuario:pass@host:puerto/dbname."""
+    from urllib.parse import urlparse
+    parsed = urlparse(url)
+    return {
+        'NAME': (parsed.path or '').lstrip('/'),
+        'USER': parsed.username,
+        'PASSWORD': parsed.password,
+        'HOST': parsed.hostname,
+        'PORT': str(parsed.port or '5432'),
+    }
+
+
+_db_url = os.environ.get('DATABASE_URL') or os.environ.get('POSTGRES_URL') or ''
+_use_postgres = os.environ.get('DB_ENGINE') == 'postgres' or bool(_db_url)
+
+if _use_postgres:
+    _from_url = _parse_db_url(_db_url) if _db_url else {}
+    _db_host = (
+        _from_url.get('HOST')
+        or os.environ.get('DB_HOST')
+        or os.environ.get('POSTGRES_HOST')
+        or os.environ.get('PGHOST')
+        or ''
+    )
+    _db_opts = {}
+    if _db_host and _db_host not in ('localhost', '127.0.0.1'):
+        _db_opts = {'sslmode': 'require'}
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.environ.get('DB_NAME', ''),
-            'USER': os.environ.get('DB_USER', ''),
-            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
-            'HOST': os.environ.get('DB_HOST', ''),
-            'PORT': os.environ.get('DB_PORT', '5432'),
+            'NAME': (
+                _from_url.get('NAME')
+                or os.environ.get('DB_NAME')
+                or os.environ.get('POSTGRES_DATABASE')
+                or os.environ.get('PGDATABASE')
+                or ''
+            ),
+            'USER': (
+                _from_url.get('USER')
+                or os.environ.get('DB_USER')
+                or os.environ.get('POSTGRES_USER')
+                or os.environ.get('PGUSER')
+                or ''
+            ),
+            'PASSWORD': (
+                _from_url.get('PASSWORD')
+                or os.environ.get('DB_PASSWORD')
+                or os.environ.get('POSTGRES_PASSWORD')
+                or os.environ.get('PGPASSWORD')
+                or ''
+            ),
+            'HOST': _db_host,
+            'PORT': (
+                _from_url.get('PORT')
+                or os.environ.get('DB_PORT')
+                or os.environ.get('PGPORT')
+                or '5432'
+            ),
             'CONN_MAX_AGE': 60,
+            'OPTIONS': _db_opts,
         }
     }
 else:
