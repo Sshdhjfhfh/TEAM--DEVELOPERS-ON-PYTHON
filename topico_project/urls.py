@@ -12,5 +12,5 @@ urlpatterns = [
     path('inventario/', include('inventario.urls')),
     path('reportes/', include('reportes.urls')),
     path('portal/', include('portal.urls')),
-    path('api/', include('api.urls')),
+    path('api/', include('api_rest.urls')),
 ]

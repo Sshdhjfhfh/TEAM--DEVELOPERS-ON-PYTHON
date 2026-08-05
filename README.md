@@ -54,7 +54,7 @@ estadísticos, API REST y un **portal de estudiantes** para la reserva de citas.
 
 - **Backend:** Python 3.12+ · Django 5.1 · Django REST Framework 3.17
 - **Frontend:** Django Templates · Bootstrap 5.3 · Bootstrap Icons · Chart.js
-- **Base de datos:** SQLite (desarrollo) · PostgreSQL (producción, planificado)
+- **Base de datos:** SQLite (desarrollo) · PostgreSQL (producción/Vercel)
 - **Pruebas:** pytest + pytest-django (83 pruebas)
 - **CI/CD:** GitHub Actions
 
@@ -112,9 +112,10 @@ TEAM--DEVELOPERS-ON-PYTHON/
 ├── inventario/            # Medicamentos y movimientos de stock
 ├── portal/                # Portal de estudiantes: padrón, registro y citas
 ├── reportes/              # Dashboard y reportes estadísticos
-├── api/                   # API REST (serializers, viewsets, router)
+├── api_rest/              # API REST (serializers, viewsets, router)
 ├── templates/             # Plantillas (base + una carpeta por módulo)
 ├── static/                # CSS e imágenes institucionales (logo UNH)
+├── api/                   # Punto de entrada WSGI para Vercel (serverless)
 ├── docs/                  # Documentación del proyecto
 ├── .github/workflows/     # CI con GitHub Actions
 ├── manage.py

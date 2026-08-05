@@ -73,6 +73,9 @@ flujo completo de registro en el portal.
 | `DJANGO_SECRET_KEY` | (clave de desarrollo) | Clave secreta de Django |
 | `DJANGO_DEBUG` | `True` | Modo depuración |
 | `DJANGO_ALLOWED_HOSTS` | `127.0.0.1,localhost` | Hosts permitidos, separados por coma |
+| `DB_ENGINE` | `sqlite` | `postgres` para usar PostgreSQL |
+| `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT` | vacíos | Credenciales de PostgreSQL (solo con `DB_ENGINE=postgres`) |
+| `DJANGO_EMAIL_BACKEND`, `DJANGO_EMAIL_HOST`, `DJANGO_EMAIL_HOST_USER`, `DJANGO_EMAIL_HOST_PASSWORD` | consola | Configuración SMTP de notificaciones |
 
 ## 5. Pruebas
 
@@ -116,3 +119,40 @@ La migración a PostgreSQL se hará configurando `DATABASES` en `settings.py` v�
 variables de entorno (`DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`),
 desactivando `DEBUG`, definiendo `DJANGO_ALLOWED_HOSTS` y sirviendo los
 estáticos con `collectstatic`.
+
+### 8.1 Despliegue en Vercel
+
+Vercel ejecuta el proyecto en funciones serverless, por lo que **no funciona
+con SQLite** (el disco es efímero). Requiere PostgreSQL.
+
+1. **Crear una base de datos gratuita** en [Neon](https://neon.tech) o
+   [Supabase](https://supabase.com). Copiar los datos de conexión
+   (`host`, `dbname`, `user`, `password`, `port`).
+2. **Configurar el proyecto en Vercel** conectándolo a este repositorio
+   de GitHub (Vercel detecta `vercel.json`).
+3. **Definir variables de entorno** en Vercel (Project Settings → Environment
+   Variables):
+   - `DB_ENGINE=postgres`
+   - `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`
+   - `DJANGO_SECRET_KEY` (una clave aleatoria segura)
+   - `DJANGO_DEBUG=False`
+   - `DJANGO_ALLOWED_HOSTS=<tu-dominio>.vercel.app`
+   - `DJANGO_EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend` y las
+     credenciales SMTP reales si se quiere correo de notificaciones.
+4. **Primer despliegue**: las migraciones se ejecutan automáticamente por el
+   `buildCommand` de `vercel.json`. Después se recomienda cargar los datos de
+   demostración una vez con un comando de consola (ver paso 5).
+5. **(Opcional) Cargar datos demo** en producción: como Vercel no permite
+   ejecutar comandos de gestión directamente, se puede crear un superusuario
+   temporalmente con `python manage.py createsuperuser` local apuntando a la
+   misma BD, o usar `python manage.py seed_demo` desde una copia del proyecto
+   con las mismas variables de entorno.
+
+> Nota: en Vercel el correo de consola no se muestra; para ver correos es
+> obligatorio configurar un SMTP real.
+
+### 8.2 Alternativa recomendada (VPS/Render)
+
+Como Vercel es serverless y sin estado, para un sistema con sesiones y citas
+se recomienda como alternativa **Render** o una **VPS** con PostgreSQL y
+`gunicorn`, ejecutando migraciones y `recordar_citas` mediante un cron.

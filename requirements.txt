@@ -10,6 +10,10 @@ tzdata==2026.2
 # --- Imágenes (campos ImageField) ---
 pillow==12.2.0
 
+# --- Producción (PostgreSQL + estáticos en Vercel) ---
+psycopg[binary]==3.2.9
+whitenoise==6.9.0
+
 # --- Pruebas ---
 pytest==9.1.0
 pytest-django==4.12.0
