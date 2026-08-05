@@ -9,8 +9,10 @@
             <div class="card-header bg-white fw-bold d-flex justify-content-between">
                 <span><i class="bi bi-clipboard2-pulse"></i> Datos de la atención</span>
                 <span>
+                    {% if puede_clinico %}
                     <a href="{% url 'atenciones:editar' atencion.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i> Editar</a>
                     <a href="{% url 'atenciones:signos' atencion.pk %}" class="btn btn-sm btn-outline-success"><i class="bi bi-activity"></i> Signos vitales</a>
+                    {% endif %}
                 </span>
             </div>
             <div class="card-body">
@@ -68,9 +70,11 @@
                 {% else %}
                 <p class="text-muted">Aún no se registraron signos vitales.</p>
                 {% endif %}
+                {% if puede_clinico %}
                 <a href="{% url 'atenciones:signos' atencion.pk %}" class="btn btn-sm btn-success">
                     <i class="bi bi-plus-circle"></i> {% if signos %}Actualizar{% else %}Registrar{% endif %}
                 </a>
+                {% endif %}
             </div>
         </div>
     </div>

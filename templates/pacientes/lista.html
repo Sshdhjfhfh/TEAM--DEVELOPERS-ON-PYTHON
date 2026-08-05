@@ -8,7 +8,9 @@
         <input type="search" name="q" value="{{ q }}" class="form-control" placeholder="Buscar por DNI o nombre...">
         <button class="btn btn-outline-primary" type="submit"><i class="bi bi-search"></i></button>
     </form>
+    {% if puede_clinico %}
     <a href="{% url 'pacientes:crear' %}" class="btn btn-primary"><i class="bi bi-person-plus"></i> Nuevo paciente</a>
+    {% endif %}
 </div>
 
 <div class="card">

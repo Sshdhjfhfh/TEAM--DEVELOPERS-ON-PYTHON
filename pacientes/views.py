@@ -3,6 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods
 
+from accounts.decorators import rol_requerido, ROLES_GESTION_PACIENTES
+
 from .forms import PacienteForm
 from .models import Paciente
 
@@ -40,6 +42,7 @@ def detalle_paciente(request, pk):
 
 
 @login_required
+@rol_requerido(*ROLES_GESTION_PACIENTES)
 @require_http_methods(['GET', 'POST'])
 def crear_paciente(request):
     """Registro de un nuevo paciente."""
@@ -54,6 +57,7 @@ def crear_paciente(request):
 
 
 @login_required
+@rol_requerido(*ROLES_GESTION_PACIENTES)
 @require_http_methods(['GET', 'POST'])
 def editar_paciente(request, pk):
     """Edición de un paciente existente."""

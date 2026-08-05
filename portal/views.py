@@ -8,15 +8,33 @@ agenda del personal de salud.
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
+from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods
 
+from accounts.decorators import ROLES_AGENDA_CITAS, rol_requerido
 from atenciones.models import Atencion
 
 from .forms import CitaForm, CompletarRegistroForm, ValidarCodigoForm
 from .models import Cita, Estudiante
 
 SESION_ESTUDIANTE = 'portal_estudiante_id'
+
+
+def _notificar_cita(estudiante, asunto, cuerpo):
+    """Envía una notificación por correo al correo institucional del estudiante."""
+    if not estudiante.correo_institucional:
+        return
+    try:
+        send_mail(
+            asunto,
+            cuerpo,
+            'topico@unh.edu.pe',
+            [estudiante.correo_institucional],
+            fail_silently=True,
+        )
+    except Exception:
+        pass
 
 
 def _perfil(usuario):
@@ -137,6 +155,15 @@ def reservar_cita(request):
             f'{cita.fecha:%d/%m/%Y} a las {cita.hora:%H:%M}. '
             'Preséntese al Tópico a la hora indicada.',
         )
+        _notificar_cita(
+            estudiante,
+            'Cita reservada en el Tópico UNH',
+            f'Hola {estudiante.nombres},\n\n'
+            f'Su cita fue reservada para el {cita.fecha:%d/%m/%Y} '
+            f'a las {cita.hora:%H:%M}.\nMotivo: {cita.motivo}\n\n'
+            'Preséntese al Tópico de la universidad a la hora indicada.\n'
+            'Atentamente, Tópico UNH.',
+        )
         return redirect('portal:mis_citas')
     return render(request, 'portal/reservar_cita.html', {'form': form})
 
@@ -153,6 +180,14 @@ def cancelar_cita(request, pk):
         cita.estado = Cita.Estado.CANCELADA
         cita.save(update_fields=['estado'])
         messages.success(request, 'Su cita fue cancelada correctamente.')
+        _notificar_cita(
+            estudiante,
+            'Cita cancelada en el Tópico UNH',
+            f'Hola {estudiante.nombres},\n\n'
+            f'Su cita del {cita.fecha:%d/%m/%Y} a las {cita.hora:%H:%M} '
+            'fue cancelada.\nSi lo desea, puede reservar un nuevo horario '
+            'desde el portal.\n\nAtentamente, Tópico UNH.',
+        )
     else:
         messages.warning(request, 'La cita seleccionada ya no puede cancelarse.')
     return redirect('portal:mis_citas')
@@ -162,10 +197,9 @@ def cancelar_cita(request, pk):
 # Agenda del personal de salud
 # ---------------------------------------------------------------------------
 @login_required
+@rol_requerido(*ROLES_AGENDA_CITAS)
 def lista_citas(request):
     """Agenda de citas del Tópico con filtros (personal de salud)."""
-    if _es_estudiante(request.user):
-        return redirect('portal:mis_citas')
     citas = Cita.objects.select_related(
         'estudiante__paciente',
         'atencion',
@@ -203,11 +237,10 @@ def lista_citas(request):
 
 
 @login_required
+@rol_requerido(*ROLES_AGENDA_CITAS)
 @require_http_methods(['GET', 'POST'])
 def convertir_cita(request, pk):
     """Convierte una cita vigente en una atención médica (personal de salud)."""
-    if _es_estudiante(request.user):
-        return redirect('portal:mis_citas')
     cita = get_object_or_404(
         Cita.objects.select_related('estudiante__paciente'),
         pk=pk,
@@ -232,6 +265,14 @@ def convertir_cita(request, pk):
         messages.success(
             request,
             f'Cita de {cita.estudiante.nombre_completo} convertida en la atención #{atencion.pk}.',
+        )
+        _notificar_cita(
+            cita.estudiante,
+            'Su cita fue atendida en el Tópico UNH',
+            f'Hola {cita.estudiante.nombres},\n\n'
+            f'Le informamos que su cita del {cita.fecha:%d/%m/%Y} fue atendida '
+            f'en el Tópico de la universidad (atención #{atencion.pk}).\n\n'
+            'Atentamente, Tópico UNH.',
         )
         return redirect('atenciones:detalle', pk=atencion.pk)
     return render(request, 'portal/convertir_cita.html', {'cita': cita})

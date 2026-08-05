@@ -1,8 +1,11 @@
+import csv
+import io
 import json
 
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, F, Sum
 from django.db.models.functions import TruncDate
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.utils import timezone
 
@@ -23,6 +26,19 @@ def _periodo_inicio(request):
         periodo = 'hoy'
         inicio = hoy
     return periodo, inicio
+
+
+def _csv_response(nombre_archivo, encabezados, filas):
+    """Devuelve una respuesta CSV con BOM UTF-8 (compatible con Excel)."""
+    buffer = io.StringIO()
+    buffer.write('\ufeff')
+    escritor = csv.writer(buffer)
+    escritor.writerow(encabezados)
+    for fila in filas:
+        escritor.writerow(fila)
+    respuesta = HttpResponse(buffer.getvalue(), content_type='text/csv; charset=utf-8')
+    respuesta['Content-Disposition'] = f'attachment; filename="{nombre_archivo}.csv"'
+    return respuesta
 
 
 def _conteo_por_dia(queryset, campo_fecha):
@@ -137,3 +153,107 @@ def reporte_inventario(request):
             'valor_inventario': round(valor_inventario, 2),
         },
     )
+
+
+# ---------------------------------------------------------------------------
+# Exportación y reportes imprimibles
+# ---------------------------------------------------------------------------
+@login_required
+def exportar_pacientes_csv(request):
+    """Exporta los pacientes del periodo a CSV."""
+    _, inicio = _periodo_inicio(request)
+    pacientes = Paciente.objects.filter(fecha_registro__date__gte=inicio).order_by('apellidos')
+    filas = [[
+        p.dni,
+        p.nombres,
+        p.apellidos,
+        p.get_sexo_display(),
+        p.edad,
+        p.tipo_sangre or '',
+        p.telefono,
+        p.fecha_registro.strftime('%d/%m/%Y %H:%M'),
+    ] for p in pacientes]
+    return _csv_response(
+        'reporte_pacientes',
+        ['DNI', 'Nombres', 'Apellidos', 'Sexo', 'Edad', 'Tipo de sangre', 'Teléfono', 'Fecha de registro'],
+        filas,
+    )
+
+
+@login_required
+def exportar_atenciones_csv(request):
+    """Exporta las atenciones del periodo a CSV."""
+    _, inicio = _periodo_inicio(request)
+    atenciones = Atencion.objects.select_related('paciente', 'medico').filter(
+        fecha_atencion__date__gte=inicio,
+    ).order_by('fecha_atencion')
+    filas = [[
+        a.fecha_atencion.strftime('%d/%m/%Y %H:%M'),
+        a.paciente.nombre_completo,
+        a.paciente.dni,
+        a.medico_nombre,
+        a.motivo_consulta,
+        a.get_nivel_triage_display(),
+        a.get_estado_display(),
+    ] for a in atenciones]
+    return _csv_response(
+        'reporte_atenciones',
+        ['Fecha', 'Paciente', 'DNI', 'Médico', 'Motivo', 'Triage', 'Estado'],
+        filas,
+    )
+
+
+@login_required
+def exportar_inventario_csv(request):
+    """Exporta el estado del almacén a CSV."""
+    medicamentos = Medicamento.objects.order_by('nombre')
+    filas = [[
+        m.nombre,
+        m.get_categoria_display(),
+        m.unidad,
+        m.stock_actual,
+        m.stock_minimo,
+        'Sí' if m.stock_critico else 'No',
+        m.precio_unitario,
+        m.fecha_vencimiento.strftime('%d/%m/%Y') if m.fecha_vencimiento else '',
+        m.proveedor,
+    ] for m in medicamentos]
+    return _csv_response(
+        'reporte_inventario',
+        ['Medicamento', 'Categoría', 'Unidad', 'Stock actual', 'Stock mínimo', 'Stock crítico', 'Precio (S/)', 'Vencimiento', 'Proveedor'],
+        filas,
+    )
+
+
+@login_required
+def imprimir_pacientes(request):
+    """Vista imprimible de pacientes del periodo (guardar como PDF)."""
+    periodo, inicio = _periodo_inicio(request)
+    pacientes = Paciente.objects.filter(fecha_registro__date__gte=inicio).order_by('apellidos')
+    return render(request, 'reportes/imprimir_pacientes.html', {
+        'periodo': periodo,
+        'pacientes': pacientes,
+    })
+
+
+@login_required
+def imprimir_atenciones(request):
+    """Vista imprimible de atenciones del periodo (guardar como PDF)."""
+    periodo, inicio = _periodo_inicio(request)
+    atenciones = Atencion.objects.select_related('paciente', 'medico').filter(
+        fecha_atencion__date__gte=inicio,
+    ).order_by('fecha_atencion')
+    return render(request, 'reportes/imprimir_atenciones.html', {
+        'periodo': periodo,
+        'atenciones': atenciones,
+    })
+
+
+@login_required
+def imprimir_inventario(request):
+    """Vista imprimible del estado del almacén (guardar como PDF)."""
+    criticos = Medicamento.objects.filter(stock_actual__lte=F('stock_minimo'))
+    return render(request, 'reportes/imprimir_inventario.html', {
+        'medicamentos': Medicamento.objects.order_by('nombre'),
+        'total_criticos': criticos.count(),
+    })

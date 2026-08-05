@@ -1,29 +1,50 @@
-<div class="auth-wrapper">
-    <div class="card auth-card">
-        <div class="card-body p-4">
-            <div class="text-center mb-4">
-                <i class="bi bi-heart-pulse-fill display-4 text-primary"></i>
-                <h4 class="mt-2 fw-bold">Tópico UNH</h4>
-                <p class="text-muted">Sistema de Gestión</p>
-            </div>
-            {% if form.non_field_errors %}
-                <div class="alert alert-danger">{{ form.non_field_errors }}</div>
-            {% endif %}
-            <form method="post" novalidate>
-                {% csrf_token %}
-                <div class="mb-3">
-                    <label class="form-label" for="id_username">Usuario</label>
-                    <input type="text" name="username" id="id_username" class="form-control" autofocus required>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label" for="id_password">Contraseña</label>
-                    <input type="password" name="password" id="id_password" class="form-control" required>
-                </div>
-                <button type="submit" class="btn btn-primary w-100">Iniciar sesión</button>
-            </form>
-            <p class="text-center mt-3 mb-0 small">
-                ¿No tienes cuenta? <a href="{% url 'accounts:registro' %}">Regístrate aquí</a>
-            </p>
-        </div>
+{% extends 'auth_base.html' %}
+{% load static %}
+{% block title %}Iniciar sesión — Tópico UNH{% endblock %}
+
+{% block banner_accion %}
+    <span class="me-2">¿Eres estudiante?</span>
+    <a href="{% url 'portal:validar_codigo' %}" class="btn btn-light">Portal de estudiantes</a>
+{% endblock %}
+
+{% block auth_panel %}
+    <div class="text-center mb-4">
+        <h4 class="fw-bold mb-1">Bienvenido de nuevo</h4>
+        <p class="text-muted mb-0">Ingrese sus credenciales para continuar</p>
     </div>
-</div>
+
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger py-2">
+            <i class="bi bi-exclamation-triangle"></i> {{ form.non_field_errors }}
+        </div>
+    {% endif %}
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label fw-semibold" for="id_username">Usuario</label>
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                <input type="text" name="username" id="id_username" class="form-control" autofocus required>
+            </div>
+        </div>
+        <div class="mb-4">
+            <label class="form-label fw-semibold" for="id_password">Contraseña</label>
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                <input type="password" name="password" id="id_password" class="form-control" required>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-auth">
+            <i class="bi bi-box-arrow-in-right"></i> Ingresar
+        </button>
+    </form>
+
+    <div class="auth-divider">¿Aún no tienes cuenta?</div>
+
+    <div class="text-center">
+        <a href="{% url 'accounts:registro' %}" class="btn btn-outline-primary btn-auth">
+            <i class="bi bi-person-plus"></i> Crear cuenta de personal
+        </a>
+    </div>
+{% endblock %}

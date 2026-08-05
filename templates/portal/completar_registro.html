@@ -1,35 +1,55 @@
+{% extends 'auth_base.html' %}
 {% load static %}
-{% load static %}
-<div class="auth-wrapper">
-    <div class="card auth-card">
-        <div class="card-body p-4">
-            <div class="text-center mb-4">
-                <img src="{% static 'img/unh-logo.png' %}" alt="Logo UNH" height="80" class="mb-2">
-                <h4 class="fw-bold">Completar registro</h4>
-                <p class="text-muted">Datos validados del padrón de matrícula</p>
-            </div>
+{% block title %}Completar registro — Tópico UNH{% endblock %}
 
-            <div class="alert alert-light border small">
-                <dl class="row detalle-lista mb-0">
-                    <dt class="col-sm-4">Código</dt>
-                    <dd class="col-sm-8 fw-semibold">{{ estudiante.codigo }}</dd>
-                    <dt class="col-sm-4">Nombres</dt>
-                    <dd class="col-sm-8">{{ estudiante.nombre_completo }}</dd>
-                    <dt class="col-sm-4">Escuela</dt>
-                    <dd class="col-sm-8">{{ estudiante.get_escuela_display }}</dd>
-                    <dt class="col-sm-4">Ciclo</dt>
-                    <dd class="col-sm-8">{{ estudiante.ciclo }}°</dd>
-                </dl>
-            </div>
+{% block banner_titulo %}Un último paso{% endblock %}
+{% block banner_subtitulo %}Sus datos académicos ya están validados en el padrón UNH{% endblock %}
+{% block banner_features %}
+    <li><i class="bi bi-patch-check"></i> Identidad verificada con el padrón de matrícula</li>
+    <li><i class="bi bi-journal-arrow-up"></i> Escuela y ciclo autocompletados</li>
+    <li><i class="bi bi-key"></i> Define tu contraseña de acceso</li>
+    <li><i class="bi bi-heart-pulse"></i> Su ficha de paciente se crea automáticamente</li>
+{% endblock %}
 
-            {% if form.non_field_errors %}
-                <div class="alert alert-danger">{{ form.non_field_errors }}</div>
-            {% endif %}
-            <form method="post" novalidate>
-                {% csrf_token %}
-                {% include 'partials/_form.html' %}
-                <button type="submit" class="btn btn-primary w-100">Crear mi cuenta</button>
-            </form>
+{% block auth_panel %}
+    <div class="text-center mb-4">
+        <h4 class="fw-bold mb-1">Completar registro</h4>
+        <p class="text-muted mb-0">Datos validados del padrón de matrícula</p>
+    </div>
+
+    <div class="alert alert-primary border-0">
+        <div class="d-flex align-items-center gap-3">
+            <i class="bi bi-person-check display-6 text-primary"></i>
+            <div class="small">
+                <div class="fw-semibold">{{ estudiante.nombre_completo }}</div>
+                <div class="text-muted">{{ estudiante.get_escuela_display }} - {{ estudiante.ciclo }}° ciclo</div>
+                <div class="text-muted">{{ estudiante.codigo }} - DNI {{ estudiante.dni }}</div>
+            </div>
         </div>
     </div>
-</div>
+
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger py-2">
+            <i class="bi bi-exclamation-triangle"></i> {{ form.non_field_errors }}
+        </div>
+    {% endif %}
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="mb-3">
+                <label class="form-label fw-semibold" for="{{ field.id_for_label }}">
+                    {{ field.label }}{% if field.field.required %} <span class="text-danger">*</span>{% endif %}
+                </label>
+                {{ field }}
+                {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                {% for error in field.errors %}
+                    <div class="text-danger small">{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary btn-auth">
+            <i class="bi bi-check-circle"></i> Crear mi cuenta
+        </button>
+    </form>
+{% endblock %}

@@ -21,8 +21,10 @@
         <button class="btn btn-outline-primary" type="submit"><i class="bi bi-search"></i></button>
     </form>
     <div>
+        {% if puede_clinico %}
         <a href="{% url 'atenciones:cola' %}" class="btn btn-outline-danger"><i class="bi bi-list-ol"></i> Cola de triage</a>
         <a href="{% url 'atenciones:crear' %}" class="btn btn-primary"><i class="bi bi-plus"></i> Nueva atención</a>
+        {% endif %}
     </div>
 </div>
 

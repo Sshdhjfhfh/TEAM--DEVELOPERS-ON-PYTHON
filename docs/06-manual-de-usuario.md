@@ -42,6 +42,21 @@ El menú lateral cambia según el rol:
 - El **Dashboard** resume indicadores del día/semana/mes con gráficos.
 - **Reportes** ofrece vistas por pacientes, atenciones e inventario con
   filtros por periodo (`hoy`, `7 días`, `30 días`).
+- Cada reporte tiene botones de **Exportar CSV** (abre en Excel) e
+  **Imprimir / PDF** (vista imprimible para guardar como PDF).
+
+### 5.1 Exportación CSV
+
+1. Abrir el reporte deseado (pacientes, atenciones o inventario).
+2. Pulsar **Exportar CSV**.
+3. El navegador descarga un archivo `.csv` con codificación UTF-8 (compatible
+   con Excel) listo para su análisis.
+
+### 5.2 Impresión / PDF
+
+1. Abrir el reporte y pulsar **Imprimir / PDF**.
+2. Se abre una vista de impresión con membrete UNH.
+3. Usar el botón **Imprimir** del navegador y elegir *Guardar como PDF*.
 
 ## 6. Portal de estudiantes
 
@@ -54,6 +69,21 @@ El menú lateral cambia según el rol:
 3. **Paso 2**: se muestran los datos académicos autocompletados (escuela,
    ciclo). Completar fecha de nacimiento, sexo, teléfono y contraseña.
 4. Al confirmar se crea la cuenta y se ingresa automáticamente al portal.
+
+### 6.0 Roles y permisos
+
+- Cada rol (Médico, Enfermero/a, Farmacéutico/a, Administrador, Estudiante)
+  puede realizar acciones de escritura solo en los módulos que le
+  corresponden: personal clínico para pacientes y atenciones, farmacéutico
+  para inventario, personal para la agenda de citas.
+- El estudiante solo accede a su portal de citas.
+- Las acciones no permitidas ocultan sus botones en la interfaz y, si se
+  intentan por URL, se redirige con un mensaje de error.
+
+### 6.1 Notificaciones de cita
+
+Al reservar, cancelar o atender una cita, se envía un correo al estudiante a
+su dirección institucional (si el padrón la registra).
 
 ### 6.2 Mi portal
 

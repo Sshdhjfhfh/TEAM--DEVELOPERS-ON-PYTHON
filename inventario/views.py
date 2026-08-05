@@ -4,6 +4,8 @@ from django.db.models import F
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods
 
+from accounts.decorators import ROLES_GESTION_INVENTARIO, rol_requerido
+
 from .forms import MedicamentoForm, MovimientoForm
 from .models import Medicamento, MovimientoInventario
 
@@ -40,6 +42,7 @@ def detalle_medicamento(request, pk):
 
 
 @login_required
+@rol_requerido(*ROLES_GESTION_INVENTARIO)
 @require_http_methods(['GET', 'POST'])
 def crear_medicamento(request):
     """Registra un nuevo medicamento en el almacén."""
@@ -52,6 +55,7 @@ def crear_medicamento(request):
 
 
 @login_required
+@rol_requerido(*ROLES_GESTION_INVENTARIO)
 @require_http_methods(['GET', 'POST'])
 def editar_medicamento(request, pk):
     """Edita un medicamento existente."""
@@ -75,6 +79,7 @@ def lista_movimientos(request):
 
 
 @login_required
+@rol_requerido(*ROLES_GESTION_INVENTARIO)
 @require_http_methods(['GET', 'POST'])
 def registrar_movimiento(request):
     """Registra un movimiento (entrada/salida/ajuste) de stock."""

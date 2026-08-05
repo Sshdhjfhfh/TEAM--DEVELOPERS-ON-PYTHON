@@ -5,8 +5,8 @@
 ![Django](https://img.shields.io/badge/Django-5.1-092E20?logo=django&logoColor=white)
 ![DRF](https://img.shields.io/badge/DRF-3.17-A30000)
 ![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3-7952B3?logo=bootstrap&logoColor=white)
-![Tests](https://img.shields.io/badge/tests-58%20passed-brightgreen)
-![Avance](https://img.shields.io/badge/avance-70%25-yellow)
+![Tests](https://img.shields.io/badge/tests-73%20passed-brightgreen)
+![Avance](https://img.shields.io/badge/avance-85%25-yellow)
 
 Sistema web para la **gestión integral del Tópico de la Universidad Nacional
 de Huancavelica (UNH)**: registro de pacientes, atenciones médicas con triage,
@@ -39,9 +39,11 @@ estadísticos, API REST y un **portal de estudiantes** para la reserva de citas.
 | **Atenciones** | Registro de atención con triage de 5 niveles (Rojo a Azul), estados (en espera / en atención / atendido / derivado), signos vitales |
 | **Cola de triage** | Cola priorizada en tiempo real: emergencias primero, ordenadas por hora de llegada |
 | **Inventario** | Medicamentos, insumos y equipos; entradas/salidas/ajustes con actualización automática de stock y alertas de stock crítico |
-| **Reportes** | Dashboard con indicadores y gráficos (Chart.js) por día, triage, estado y médico; valorización del inventario |
+| **Reportes** | Dashboard con indicadores y gráficos (Chart.js) por día, triage, estado y médico; valorización del inventario. Exportación a **CSV (Excel)** y vista **imprimible (PDF)** |
 | **Portal de estudiantes** | Registro en dos pasos validado contra el padrón UNH, autocompletado de escuela y ciclo, y reserva de citas con horario del Tópico |
 | **Agenda de citas** | Gestión por el personal de salud y conversión de una cita en atención médica |
+| **Permisos por rol** | Control de acceso granular por módulo (clínico, farmacia, agenda) con decoradores y ocultado de acciones en la interfaz |
+| **Notificaciones** | Correo institucional al estudiante al reservar, cancelar o atender su cita |
 | **API REST** | CRUD con autenticación por token, búsqueda, filtros, ordenamiento y paginación |
 
 ## Stack tecnológico
@@ -49,7 +51,7 @@ estadísticos, API REST y un **portal de estudiantes** para la reserva de citas.
 - **Backend:** Python 3.12+ · Django 5.1 · Django REST Framework 3.17
 - **Frontend:** Django Templates · Bootstrap 5.3 · Bootstrap Icons · Chart.js
 - **Base de datos:** SQLite (desarrollo) · PostgreSQL (producción, planificado)
-- **Pruebas:** pytest + pytest-django (58 pruebas)
+- **Pruebas:** pytest + pytest-django (73 pruebas)
 - **CI/CD:** GitHub Actions
 
 ## Instalación
@@ -147,13 +149,14 @@ Referencia completa: [docs/04-api.md](docs/04-api.md)
 ## Pruebas
 
 ```bash
-pytest            # ejecuta las 58 pruebas
+pytest            # ejecuta las 73 pruebas
 pytest -v         # modo detallado
 ```
 
 Cobertura: modelos (validaciones, propiedades, lógica de stock, slots de
 citas), vistas web (autenticación, CRUD, registro de estudiantes, reserva y
-cancelación de citas, conversión a atención) y API REST (token, permisos,
+cancelación de citas, conversión a atención, permisos por rol, exportaciones
+CSV e imprimibles, notificaciones de cita) y API REST (token, permisos,
 filtros).
 
 ## Documentación
@@ -164,7 +167,7 @@ filtros).
 | [02 — Arquitectura](docs/02-arquitectura.md) | Diseño del sistema, apps, decisiones técnicas |
 | [03 — Modelo de datos](docs/03-modelo-de-datos.md) | Entidades, relaciones y diagrama ER |
 | [04 — API REST](docs/04-api.md) | Referencia completa de endpoints |
-| [05 — Product Backlog](docs/05-product-backlog.md) | User stories, sprints y avance (70 %) |
+| [05 — Product Backlog](docs/05-product-backlog.md) | User stories, sprints y avance (85 %) |
 | [06 — Manual de usuario](docs/06-manual-de-usuario.md) | Guía de uso pantalla por pantalla |
 | [07 — Guía de instalación](docs/07-guia-de-instalacion.md) | Instalación detallada y solución de problemas |
 
@@ -179,10 +182,10 @@ El proyecto se desarrolla con **Scrum** y **Git Flow** (ramas `main`,
 | Sprint 1 | Autenticación, pacientes y atenciones con triage | Completado |
 | Sprint 2 | Inventario, reportes, API REST y CI | Completado |
 | Sprint 3 | Portal de estudiantes (padrón, registro y citas) | Completado |
-| Sprint 4 | Exportación PDF/Excel, permisos por rol, derivaciones | En curso |
-| Sprint 5 | Despliegue en producción (PostgreSQL), notificaciones | Pendiente |
+| Sprint 4 | Exportación PDF/Excel, permisos por rol, notificaciones de citas | Completado |
+| Sprint 5 | Derivaciones formales y despliegue en producción (PostgreSQL) | Pendiente |
 
-**Avance actual: ~70 %** — detalle en el [Product Backlog](docs/05-product-backlog.md).
+**Avance actual: ~85 %** — detalle en el [Product Backlog](docs/05-product-backlog.md).
 
 ## Equipo — TEAM DEVELOPERS ON PYTHON
 

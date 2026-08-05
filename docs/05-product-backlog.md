@@ -35,11 +35,11 @@ El proyecto se desarrolla con **Scrum** (sprints de 2 semanas) y **Git Flow**
 | HU-14 | Como estudiante quiero cancelar mi cita vigente si no puedo asistir. | EP-5 | Alta | Hecho |
 | HU-15 | Como personal quiero ver la agenda de citas y convertirlas en atenciones. | EP-5 | Alta | Hecho |
 | HU-16 | Como desarrollador quiero una API REST autenticada para integrar sistemas. | EP-6 | Media | Hecho |
-| HU-17 | Como jefatura quiero exportar reportes a PDF/Excel. | EP-6 | Media | Pendiente |
-| HU-18 | Como administrador quiero permisos granulares por rol en cada vista. | EP-6 | Media | Pendiente |
+| HU-17 | Como jefatura quiero exportar reportes a PDF/Excel. | EP-6 | Media | Hecho |
+| HU-18 | Como administrador quiero permisos granulares por rol en cada vista. | EP-6 | Media | Hecho |
 | HU-19 | Como personal quiero derivar formalmente pacientes a centros externos. | EP-6 | Media | Pendiente |
 | HU-20 | Como administrador quiero desplegar el sistema en producción con PostgreSQL. | EP-6 | Alta | Pendiente |
-| HU-21 | Como estudiante quiero recibir notificaciones sobre mi cita. | EP-5 | Baja | Pendiente |
+| HU-21 | Como estudiante quiero recibir notificaciones sobre mi cita. | EP-5 | Baja | Hecho |
 
 ## 3. Plan de sprints
 
@@ -49,12 +49,12 @@ El proyecto se desarrolla con **Scrum** (sprints de 2 semanas) y **Git Flow**
 | Sprint 1 | Cuentas y roles, pacientes y atenciones con triage | HU-01 a HU-06 | Completado | 100 % |
 | Sprint 2 | Inventario, reportes, API REST y CI | HU-07 a HU-10, HU-16 | Completado | 100 % |
 | Sprint 3 | Portal de estudiantes (padrón, registro, citas) | HU-11 a HU-15 | Completado | 100 % |
-| Sprint 4 | Exportaciones, permisos por rol y derivaciones | HU-17 a HU-19 | En curso | ~30 % |
-| Sprint 5 | Despliegue en producción y notificaciones | HU-20, HU-21 | Pendiente | 0 % |
+| Sprint 4 | Exportaciones, permisos por rol y notificaciones de citas | HU-17, HU-18, HU-21 | Completado | 100 % |
+| Sprint 5 | Derivaciones formales y despliegue en producción | HU-19, HU-20 | Pendiente | 0 % |
 
 ## 4. Avance global
 
-**Avance estimado: ~70 %**
+**Avance estimado: ~85 %**
 
 | Componente | Estado |
 |---|---|
@@ -62,9 +62,11 @@ El proyecto se desarrolla con **Scrum** (sprints de 2 semanas) y **Git Flow**
 | Vistas web y plantillas | Completado |
 | Portal de estudiantes | Completado |
 | API REST | Completado |
-| Pruebas automatizadas (58) | Completado |
+| Exportaciones CSV e imprimibles (PDF) | Completado |
+| Permisos por rol y notificaciones por correo | Completado |
+| Pruebas automatizadas (73) | Completado |
 | Documentación | Completado |
-| Exportaciones / permisos / derivaciones | Pendiente |
+| Derivaciones formales | Pendiente |
 | Producción (PostgreSQL) | Pendiente |
 
 ## 5. Definición de hecho (DoD)

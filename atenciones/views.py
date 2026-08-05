@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods
 
+from accounts.decorators import ROLES_GESTION_ATENCIONES, rol_requerido
 from pacientes.models import Paciente
 
 from .forms import AtencionForm, SignosVitalesForm
@@ -58,6 +59,7 @@ def detalle_atencion(request, pk):
 
 
 @login_required
+@rol_requerido(*ROLES_GESTION_ATENCIONES)
 @require_http_methods(['GET', 'POST'])
 def crear_atencion(request):
     """Registra una nueva atención médica."""
@@ -70,6 +72,7 @@ def crear_atencion(request):
 
 
 @login_required
+@rol_requerido(*ROLES_GESTION_ATENCIONES)
 @require_http_methods(['GET', 'POST'])
 def editar_atencion(request, pk):
     """Edita una atención médica existente."""
@@ -83,6 +86,7 @@ def editar_atencion(request, pk):
 
 
 @login_required
+@rol_requerido(*ROLES_GESTION_ATENCIONES)
 @require_http_methods(['GET', 'POST'])
 def registrar_signos(request, pk):
     """Registra o actualiza los signos vitales de una atención."""
@@ -97,6 +101,7 @@ def registrar_signos(request, pk):
 
 
 @login_required
+@rol_requerido(*ROLES_GESTION_ATENCIONES)
 def cola_atenciones(request):
     """Cola de pacientes por triage: en espera y en atención (emergencias primero)."""
     atenciones = (

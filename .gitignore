@@ -214,5 +214,8 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 
+# Herramientas externas no relacionadas con el proyecto
+nemesis_v42.py
+
 # Streamlit
 .streamlit/secrets.toml

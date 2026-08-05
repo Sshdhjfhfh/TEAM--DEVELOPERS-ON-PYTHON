@@ -3,6 +3,15 @@
 {% block header %}Reporte de inventario{% endblock %}
 
 {% block content %}
+<div class="d-flex justify-content-end gap-2 mb-3">
+    <a href="{% url 'reportes:inventario_csv' %}" class="btn btn-outline-success">
+        <i class="bi bi-file-earmark-excel"></i> Exportar CSV
+    </a>
+    <a href="{% url 'reportes:inventario_imprimir' %}" class="btn btn-outline-primary">
+        <i class="bi bi-file-earmark-pdf"></i> Imprimir / PDF
+    </a>
+</div>
+
 <div class="row g-4 mb-4">
     <div class="col-md-4">
         <div class="card stat-card info">

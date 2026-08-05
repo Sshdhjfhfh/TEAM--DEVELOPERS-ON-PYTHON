@@ -1,8 +1,9 @@
 from datetime import timedelta
 
 from django.contrib.auth.models import User
+from django.core import mail
 from django.core.exceptions import ValidationError
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
@@ -246,6 +247,30 @@ class CitasEstudianteTests(TestCase):
         citas = list(respuesta.context['citas'])
         self.assertEqual(len(citas), 1)
         self.assertEqual(citas[0].motivo, 'Mía')
+
+    @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
+    def test_reservar_cita_envia_notificacion(self):
+        self.estudiante.correo_institucional = 'ana@unh.edu.pe'
+        self.estudiante.save(update_fields=['correo_institucional'])
+        respuesta = self.client.post(reverse('portal:reservar_cita'), {
+            'fecha': _proximo_dia_habil().isoformat(),
+            'hora': '10:00',
+            'motivo': 'Control anual',
+        })
+        self.assertRedirects(respuesta, reverse('portal:mis_citas'))
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ['ana@unh.edu.pe'])
+        self.assertIn('Control anual', mail.outbox[0].body)
+
+    @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
+    def test_reservar_cita_sin_correo_no_envia(self):
+        respuesta = self.client.post(reverse('portal:reservar_cita'), {
+            'fecha': _proximo_dia_habil().isoformat(),
+            'hora': '11:00',
+            'motivo': 'Consulta',
+        })
+        self.assertRedirects(respuesta, reverse('portal:mis_citas'))
+        self.assertEqual(len(mail.outbox), 0)
 
 
 class AgendaPersonalTests(TestCase):

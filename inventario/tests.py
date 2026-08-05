@@ -60,6 +60,8 @@ class InventarioModelTests(TestCase):
 class InventarioViewTests(TestCase):
     def setUp(self):
         self.usuario = User.objects.create_user(username='test', password='pass12345')
+        self.usuario.profile.role = 'FARMACEUTICO'
+        self.usuario.profile.save()
         self.client.force_login(self.usuario)
         self.med = Medicamento.objects.create(
             nombre='Ibuprofeno 400mg', stock_actual=50, stock_minimo=10,

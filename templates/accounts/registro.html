@@ -1,28 +1,46 @@
-<div class="auth-wrapper">
-    <div class="card auth-card">
-        <div class="card-body p-4">
-            <div class="text-center mb-4">
-                <i class="bi bi-person-plus-fill display-4 text-primary"></i>
-                <h4 class="mt-2 fw-bold">Crear cuenta</h4>
-                <p class="text-muted">Registro de personal del Tópico UNH</p>
-            </div>
-            <form method="post" novalidate>
-                {% csrf_token %}
-                {% for field in form %}
-                    <div class="mb-3">
-                        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-                        {{ field }}
-                        {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
-                        {% for error in field.errors %}
-                            <div class="invalid-feedback d-block">{{ error }}</div>
-                        {% endfor %}
-                    </div>
-                {% endfor %}
-                <button type="submit" class="btn btn-primary w-100">Registrarme</button>
-            </form>
-            <p class="text-center mt-3 mb-0 small">
-                ¿Ya tienes cuenta? <a href="{% url 'accounts:login' %}">Inicia sesión</a>
-            </p>
-        </div>
+{% extends 'auth_base.html' %}
+{% load static %}
+{% block title %}Registro — Tópico UNH{% endblock %}
+
+{% block banner_accion %}
+    <span class="me-2">¿Ya tienes cuenta?</span>
+    <a href="{% url 'accounts:login' %}" class="btn btn-light">Iniciar sesión</a>
+{% endblock %}
+
+{% block auth_panel %}
+    <div class="text-center mb-4">
+        <h4 class="fw-bold mb-1">Crear cuenta de personal</h4>
+        <p class="text-muted mb-0">Registro de usuarios del Tópico UNH</p>
     </div>
-</div>
+
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger py-2">
+            <i class="bi bi-exclamation-triangle"></i> {{ form.non_field_errors }}
+        </div>
+    {% endif %}
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="mb-3">
+                <label class="form-label fw-semibold" for="{{ field.id_for_label }}">
+                    {{ field.label }}{% if field.field.required %} <span class="text-danger">*</span>{% endif %}
+                </label>
+                {{ field }}
+                {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                {% for error in field.errors %}
+                    <div class="text-danger small">{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary btn-auth">
+            <i class="bi bi-check-circle"></i> Registrarme
+        </button>
+    </form>
+
+    <div class="auth-divider">¿Ya tienes cuenta?</div>
+
+    <div class="text-center">
+        <a href="{% url 'accounts:login' %}" class="btn btn-outline-primary btn-auth">Iniciar sesión</a>
+    </div>
+{% endblock %}
