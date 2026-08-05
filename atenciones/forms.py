@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Atencion, SignosVitales
+from .models import Atencion, RecetaMedicamento, SignosVitales
 
 
 class AtencionForm(forms.ModelForm):
@@ -47,4 +47,19 @@ class SignosVitalesForm(forms.ModelForm):
             'saturacion_oxigeno': forms.NumberInput(attrs={'class': 'form-control'}),
             'peso': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1'}),
             'talla': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.1'}),
+        }
+
+
+class RecetaForm(forms.ModelForm):
+    """Formulario para agregar un medicamento a la receta de una atención."""
+
+    class Meta:
+        model = RecetaMedicamento
+        fields = ('medicamento', 'cantidad', 'indicaciones')
+        widgets = {
+            'medicamento': forms.Select(attrs={'class': 'form-select'}),
+            'cantidad': forms.NumberInput(attrs={'class': 'form-control', 'min': '1'}),
+            'indicaciones': forms.TextInput(
+                attrs={'class': 'form-control', 'placeholder': 'Ej.: 1 tableta cada 8 horas por 5 días'}
+            ),
         }

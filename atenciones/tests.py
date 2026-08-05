@@ -1,12 +1,14 @@
 from datetime import date
 
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.urls import reverse
 
+from inventario.models import Medicamento, MovimientoInventario
 from pacientes.models import Paciente
 
-from .models import Atencion, SignosVitales
+from .models import Atencion, RecetaMedicamento, SignosVitales
 
 
 def crear_contexto():
@@ -89,3 +91,59 @@ class AtencionViewTests(TestCase):
         })
         self.assertEqual(respuesta.status_code, 302)
         self.assertTrue(SignosVitales.objects.filter(atencion=self.atencion).exists())
+
+
+class RecetaMedicamentoTests(TestCase):
+    def setUp(self):
+        self.usuario, self.paciente = crear_contexto()
+        self.client.force_login(self.usuario)
+        self.atencion = Atencion.objects.create(
+            paciente=self.paciente, motivo_consulta='Dolor de cabeza',
+        )
+        self.medicamento = Medicamento.objects.create(
+            nombre='Paracetamol 500mg', stock_actual=20, stock_minimo=5,
+        )
+
+    def test_receta_descuenta_stock(self):
+        item = RecetaMedicamento.objects.create(
+            atencion=self.atencion,
+            medicamento=self.medicamento,
+            cantidad=6,
+            indicaciones='1 cada 8 horas por 2 días',
+        )
+        self.assertEqual(item.medicamento.stock_actual, 14)
+        movimiento = MovimientoInventario.objects.get(medicamento=self.medicamento)
+        self.assertEqual(movimiento.tipo, MovimientoInventario.Tipo.SALIDA)
+        self.assertEqual(movimiento.cantidad, 6)
+        self.assertEqual(movimiento.atencion, self.atencion)
+        self.assertIn('Receta', movimiento.motivo)
+
+    def test_receta_sin_stock_suficiente_rechazada(self):
+        with self.assertRaises(ValidationError):
+            RecetaMedicamento.objects.create(
+                atencion=self.atencion,
+                medicamento=self.medicamento,
+                cantidad=25,
+            )
+
+    def test_vista_agregar_receta(self):
+        respuesta = self.client.post(
+            reverse('atenciones:agregar_receta', args=[self.atencion.pk]),
+            {'medicamento': self.medicamento.pk, 'cantidad': 4, 'indicaciones': '1 cada 8 horas'},
+        )
+        self.assertEqual(respuesta.status_code, 302)
+        self.medicamento.refresh_from_db()
+        self.assertEqual(self.medicamento.stock_actual, 16)
+        self.assertTrue(
+            RecetaMedicamento.objects.filter(atencion=self.atencion).exists()
+        )
+
+    def test_vista_agregar_receta_sin_stock(self):
+        self.medicamento.stock_actual = 2
+        self.medicamento.save()
+        respuesta = self.client.post(
+            reverse('atenciones:agregar_receta', args=[self.atencion.pk]),
+            {'medicamento': self.medicamento.pk, 'cantidad': 5},
+        )
+        self.assertEqual(respuesta.status_code, 302)
+        self.assertEqual(self.medicamento.stock_actual, 2)

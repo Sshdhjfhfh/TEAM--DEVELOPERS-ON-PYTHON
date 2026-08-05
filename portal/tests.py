@@ -3,10 +3,13 @@ from datetime import timedelta
 from django.contrib.auth.models import User
 from django.core import mail
 from django.core.exceptions import ValidationError
+from django.core.management import call_command
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
+from atenciones.models import Atencion, RecetaMedicamento
+from inventario.models import Medicamento
 from accounts.models import Profile
 from pacientes.models import Paciente
 
@@ -270,6 +273,101 @@ class CitasEstudianteTests(TestCase):
             'motivo': 'Consulta',
         })
         self.assertRedirects(respuesta, reverse('portal:mis_citas'))
+        self.assertEqual(len(mail.outbox), 0)
+
+
+class HistoriaClinicaTests(TestCase):
+    def setUp(self):
+        self.estudiante, self.usuario = _crear_cuenta_estudiante()
+        self.personal = _crear_personal()
+        self.paciente = Paciente.objects.create(
+            nombres='Prueba', apellidos='Estudiante Test',
+            dni=self.estudiante.dni, fecha_nacimiento='2002-05-10',
+            sexo='M', registrado_por=self.personal,
+        )
+        self.estudiante.paciente = self.paciente
+        self.estudiante.save(update_fields=['paciente'])
+        self.atencion = Atencion.objects.create(
+            paciente=self.paciente, medico=self.personal,
+            motivo_consulta='Control', diagnostico='Sano',
+            tratamiento='Descanso y líquidos',
+        )
+        self.client.force_login(self.usuario)
+
+    def test_mi_historia_muestra_atenciones_propias(self):
+        respuesta = self.client.get(reverse('portal:mi_historia'))
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertContains(respuesta, 'Sano')
+        self.assertContains(respuesta, 'Descanso y líquidos')
+
+    def test_mi_historia_muestra_receta(self):
+        medicamento = Medicamento.objects.create(
+            nombre='Ibuprofeno 400mg', stock_actual=20, stock_minimo=5,
+        )
+        RecetaMedicamento.objects.create(
+            atencion=self.atencion, medicamento=medicamento, cantidad=4,
+            indicaciones='1 cada 8 horas',
+        )
+        respuesta = self.client.get(reverse('portal:mi_historia'))
+        self.assertContains(respuesta, 'Ibuprofeno 400mg')
+
+
+class ColaEstudianteTests(TestCase):
+    def setUp(self):
+        self.estudiante, self.usuario = _crear_cuenta_estudiante()
+        self.personal = _crear_personal()
+        self.paciente = Paciente.objects.create(
+            nombres='Prueba', apellidos='Estudiante Test',
+            dni=self.estudiante.dni, fecha_nacimiento='2002-05-10',
+            sexo='M', registrado_por=self.personal,
+        )
+        self.estudiante.paciente = self.paciente
+        self.estudiante.save(update_fields=['paciente'])
+        self.client.force_login(self.usuario)
+
+    def test_mi_cola_sin_atenciones(self):
+        respuesta = self.client.get(reverse('portal:mi_cola'))
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertContains(respuesta, 'No tienes una atención en curso')
+
+    def test_mi_cola_muestra_posicion(self):
+        Atencion.objects.create(
+            paciente=self.paciente, motivo_consulta='Chequeo',
+            estado=Atencion.Estado.EN_ESPERA,
+        )
+        respuesta = self.client.get(reverse('portal:mi_cola'))
+        self.assertEqual(respuesta.status_code, 200)
+        self.assertContains(respuesta, 'Tu turno: 1')
+
+
+class RecordarCitasCommandTests(TestCase):
+    @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
+    def test_recordar_citas_envia_correos(self):
+        estudiante, _ = _crear_cuenta_estudiante()
+        estudiante.correo_institucional = 'luis@unh.edu.pe'
+        estudiante.save(update_fields=['correo_institucional'])
+        Cita.objects.create(
+            estudiante=estudiante,
+            fecha=(timezone.localdate() + timedelta(days=1)),
+            hora=Cita.slots_del_dia()[0],
+            motivo='Control',
+        )
+        call_command('recordar_citas', horas=24)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ['luis@unh.edu.pe'])
+        self.assertIn('mañana', mail.outbox[0].body)
+
+    def test_recordar_citas_dry_run_no_envia(self):
+        estudiante, _ = _crear_cuenta_estudiante()
+        estudiante.correo_institucional = 'luis@unh.edu.pe'
+        estudiante.save(update_fields=['correo_institucional'])
+        Cita.objects.create(
+            estudiante=estudiante,
+            fecha=(timezone.localdate() + timedelta(days=1)),
+            hora=Cita.slots_del_dia()[0],
+            motivo='Control',
+        )
+        call_command('recordar_citas', horas=24, dry_run=True)
         self.assertEqual(len(mail.outbox), 0)
 
 

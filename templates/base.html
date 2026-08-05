@@ -28,6 +28,14 @@
                        href="{% url 'portal:mis_citas' %}"><i class="bi bi-calendar-check"></i> Mis citas</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'mi_cola' %}active{% endif %}"
+                       href="{% url 'portal:mi_cola' %}"><i class="bi bi-hourglass-split"></i> Estado de mi atención</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'mi_historia' %}active{% endif %}"
+                       href="{% url 'portal:mi_historia' %}"><i class="bi bi-journal-medical"></i> Mi historia clínica</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link {% if request.resolver_match.url_name == 'reservar_cita' %}active{% endif %}"
                        href="{% url 'portal:reservar_cita' %}"><i class="bi bi-calendar-plus"></i> Reservar cita</a>
                 </li>

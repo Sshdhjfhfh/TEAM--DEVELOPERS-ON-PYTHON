@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db import models
+from django.db import models, transaction
+from django.core.exceptions import ValidationError
 
 
 class Atencion(models.Model):
@@ -69,6 +70,65 @@ class Atencion(models.Model):
         if self.medico_id:
             return self.medico.get_full_name() or self.medico.username
         return '—'
+
+
+class RecetaMedicamento(models.Model):
+    """Ítem de receta médica que descuenta automáticamente el inventario."""
+
+    atencion = models.ForeignKey(
+        Atencion,
+        on_delete=models.CASCADE,
+        related_name='receta',
+        verbose_name='Atención',
+    )
+    medicamento = models.ForeignKey(
+        'inventario.Medicamento',
+        on_delete=models.PROTECT,
+        related_name='recetas',
+        verbose_name='Medicamento',
+    )
+    cantidad = models.PositiveSmallIntegerField(
+        'Cantidad',
+        validators=[MinValueValidator(1)],
+    )
+    indicaciones = models.CharField('Indicaciones', max_length=200, blank=True)
+    registrado_en = models.DateTimeField('Registrado en', auto_now_add=True)
+
+    class Meta:
+        verbose_name = 'Ítem de receta'
+        verbose_name_plural = 'Ítems de receta'
+        ordering = ['registrado_en']
+
+    def __str__(self):
+        return f'{self.cantidad} x {self.medicamento.nombre} (atención #{self.atencion_id})'
+
+    def clean(self):
+        super().clean()
+        if self.cantidad and self.medicamento_id:
+            if self.cantidad > self.medicamento.stock_actual:
+                raise ValidationError(
+                    {'cantidad': f'Solo hay {self.medicamento.stock_actual} {self.medicamento.unidad} '
+                                 f'disponibles de {self.medicamento.nombre}.'}
+                )
+
+    def save(self, *args, **kwargs):
+        """Registra el ítem y descuenta el stock con una salida de inventario."""
+        if self.cantidad and self.medicamento_id:
+            if self.cantidad > self.medicamento.stock_actual:
+                raise ValidationError(
+                    {'cantidad': f'Solo hay {self.medicamento.stock_actual} {self.medicamento.unidad} '
+                                 f'disponibles de {self.medicamento.nombre}.'}
+                )
+        with transaction.atomic():
+            super().save(*args, **kwargs)
+            from inventario.models import MovimientoInventario
+            MovimientoInventario.objects.create(
+                medicamento=self.medicamento,
+                tipo=MovimientoInventario.Tipo.SALIDA,
+                cantidad=self.cantidad,
+                motivo=f'Receta de la atención #{self.atencion_id}',
+                atencion=self.atencion,
+            )
 
 
 class SignosVitales(models.Model):

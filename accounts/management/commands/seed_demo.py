@@ -11,7 +11,7 @@ from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
-from atenciones.models import Atencion, SignosVitales
+from atenciones.models import Atencion, RecetaMedicamento, SignosVitales
 from inventario.models import Medicamento, MovimientoInventario
 from pacientes.models import Paciente
 from portal.models import Cita, Estudiante
@@ -179,6 +179,16 @@ class Command(BaseCommand):
                 usuario=farmacia,
             )
 
+        # --- Receta de ejemplo (descuenta stock) ---
+        primera_atencion = Atencion.objects.first()
+        if primera_atencion and not RecetaMedicamento.objects.exists():
+            RecetaMedicamento.objects.create(
+                atencion=primera_atencion,
+                medicamento=medicamentos[0],
+                cantidad=10,
+                indicaciones='1 tableta cada 8 horas por 3 días',
+            )
+
         # --- Padrón de estudiantes (portal) ---
         padron_data = [
             # codigo, dni, nombres, apellidos, escuela, ciclo, matriculado
@@ -271,7 +281,7 @@ class Command(BaseCommand):
 
     def _reset(self):
         self.stdout.write('Eliminando datos existentes...')
-        for modelo in (Cita, Estudiante, Atencion, SignosVitales, Medicamento, MovimientoInventario, Paciente):
+        for modelo in (Cita, Estudiante, Atencion, SignosVitales, RecetaMedicamento, Medicamento, MovimientoInventario, Paciente):
             modelo.objects.all().delete()
         for user in User.objects.filter(username__in=['admin', 'medico', 'enfermera', 'farmacia', 'estudiante']):
             user.delete()

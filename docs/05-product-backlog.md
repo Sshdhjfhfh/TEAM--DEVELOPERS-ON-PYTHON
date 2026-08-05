@@ -40,6 +40,10 @@ El proyecto se desarrolla con **Scrum** (sprints de 2 semanas) y **Git Flow**
 | HU-19 | Como personal quiero derivar formalmente pacientes a centros externos. | EP-6 | Media | Pendiente |
 | HU-20 | Como administrador quiero desplegar el sistema en producción con PostgreSQL. | EP-6 | Alta | Pendiente |
 | HU-21 | Como estudiante quiero recibir notificaciones sobre mi cita. | EP-5 | Baja | Hecho |
+| HU-22 | Como estudiante quiero conocer mi posición en la cola de atención en tiempo real. | EP-5 | Alta | Hecho |
+| HU-23 | Como estudiante quiero consultar mi historia clínica (atenciones y recetas). | EP-5 | Alta | Hecho |
+| HU-24 | Como personal quiero recetar medicamentos con descuento automático del stock. | EP-3 | Alta | Hecho |
+| HU-25 | Como estudiante quiero recibir un recordatorio de mi cita 24 horas antes. | EP-5 | Media | Hecho |
 
 ## 3. Plan de sprints
 
@@ -50,11 +54,12 @@ El proyecto se desarrolla con **Scrum** (sprints de 2 semanas) y **Git Flow**
 | Sprint 2 | Inventario, reportes, API REST y CI | HU-07 a HU-10, HU-16 | Completado | 100 % |
 | Sprint 3 | Portal de estudiantes (padrón, registro, citas) | HU-11 a HU-15 | Completado | 100 % |
 | Sprint 4 | Exportaciones, permisos por rol y notificaciones de citas | HU-17, HU-18, HU-21 | Completado | 100 % |
-| Sprint 5 | Derivaciones formales y despliegue en producción | HU-19, HU-20 | Pendiente | 0 % |
+| Sprint 5 | Cola en tiempo real, historia clínica, recetas digitales y recordatorios | HU-22 a HU-25 | Completado | 100 % |
+| Sprint 6 | Derivaciones formales y despliegue en producción | HU-19, HU-20 | Pendiente | 0 % |
 
 ## 4. Avance global
 
-**Avance estimado: ~85 %**
+**Avance estimado: ~95 %**
 
 | Componente | Estado |
 |---|---|
@@ -64,7 +69,11 @@ El proyecto se desarrolla con **Scrum** (sprints de 2 semanas) y **Git Flow**
 | API REST | Completado |
 | Exportaciones CSV e imprimibles (PDF) | Completado |
 | Permisos por rol y notificaciones por correo | Completado |
-| Pruebas automatizadas (73) | Completado |
+| Cola de atención en tiempo real | Completado |
+| Historia clínica del estudiante | Completado |
+| Recetas digitales con descuento de stock | Completado |
+| Recordatorios automáticos de cita | Completado |
+| Pruebas automatizadas (83) | Completado |
 | Documentación | Completado |
 | Derivaciones formales | Pendiente |
 | Producción (PostgreSQL) | Pendiente |

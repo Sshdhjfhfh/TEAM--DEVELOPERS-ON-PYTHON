@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}Cola de atención — Tópico UNH{% endblock %}
+{% block header %}Estado de mi atención{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="card mb-4">
+            <div class="card-body text-center">
+                <i class="bi bi-hourglass-split display-3 {% if mi_atencion and mi_atencion.estado == 'EN_ATENCION' %}text-success{% else %}text-primary{% endif %}"></i>
+                <h4 class="mt-2">
+                    {% if mi_atencion %}
+                        {% if mi_atencion.estado == 'EN_ATENCION' %}
+                            Estás siendo atendido/a ahora
+                        {% else %}
+                            Tu turno: {{ mi_posicion }}
+                        {% endif %}
+                    {% else %}
+                        No tienes una atención en curso
+                    {% endif %}
+                </h4>
+                {% if mi_atencion %}
+                <p class="text-muted mb-2">
+                    Personas en espera antes de ti: <strong>{{ mi_posicion|add:"-1" }}</strong>
+                </p>
+                <span class="badge badge-triage-{{ mi_atencion.nivel_triage|lower }}">{{ mi_atencion.get_nivel_triage_display }}</span>
+                <p class="small text-muted mt-2 mb-0">Hora de llegada: {{ mi_atencion.fecha_atencion|date:'H:i' }}</p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header bg-white fw-bold"><i class="bi bi-info-circle"></i> ¿Cómo funciona?</div>
+            <div class="card-body small text-muted">
+                <p class="mb-1">La cola se ordena por gravedad (triage) y luego por hora de llegada. Las emergencias se atienden primero, por lo que tu posición puede variar.</p>
+                <p class="mb-0">Refresca esta página para ver el estado actualizado.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="card h-100">
+            <div class="card-header bg-white fw-bold">
+                <i class="bi bi-list-ol"></i> Cola de hoy ({{ cola|length }} en total)
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr><th>#</th><th>Paciente</th><th>Triage</th><th>Estado</th><th>Llegada</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for atencion in cola %}
+                        <tr {% if mi_atencion and atencion.pk == mi_atencion.pk %}class="table-warning fw-semibold"{% endif %}>
+                            <td>{{ forloop.counter }}</td>
+                            <td>
+                                {{ atencion.paciente.nombre_completo }}
+                                {% if mi_atencion and atencion.pk == mi_atencion.pk %}<span class="badge text-bg-primary ms-1">Tú</span>{% endif %}
+                            </td>
+                            <td><span class="badge badge-triage-{{ atencion.nivel_triage|lower }}">{{ atencion.get_nivel_triage_display }}</span></td>
+                            <td>
+                                {% if atencion.estado == 'EN_ESPERA' %}<span class="badge text-bg-warning">En espera</span>
+                                {% else %}<span class="badge text-bg-success">En atención</span>{% endif %}
+                            </td>
+                            <td>{{ atencion.fecha_atencion|date:'H:i' }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-center text-muted py-4">No hay atenciones en curso hoy.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

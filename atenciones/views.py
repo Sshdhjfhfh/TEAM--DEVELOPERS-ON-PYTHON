@@ -6,7 +6,7 @@ from django.views.decorators.http import require_http_methods
 from accounts.decorators import ROLES_GESTION_ATENCIONES, rol_requerido
 from pacientes.models import Paciente
 
-from .forms import AtencionForm, SignosVitalesForm
+from .forms import AtencionForm, RecetaForm, SignosVitalesForm
 from .models import Atencion, SignosVitales
 
 
@@ -45,16 +45,22 @@ def lista_atenciones(request):
 
 @login_required
 def detalle_atencion(request, pk):
-    """Detalle de una atención con sus signos vitales."""
+    """Detalle de una atención con sus signos vitales y receta."""
     atencion = get_object_or_404(
         Atencion.objects.select_related('paciente', 'medico'),
         pk=pk,
     )
     signos = getattr(atencion, 'signos_vitales', None)
+    receta = atencion.receta.select_related('medicamento').all()
     return render(
         request,
         'atenciones/detalle.html',
-        {'atencion': atencion, 'signos': signos},
+        {
+            'atencion': atencion,
+            'signos': signos,
+            'receta': receta,
+            'receta_form': RecetaForm(),
+        },
     )
 
 
@@ -98,6 +104,29 @@ def registrar_signos(request, pk):
         messages.success(request, f'Signos vitales de la atención #{pk} registrados.')
         return redirect('atenciones:detalle', pk=pk)
     return render(request, 'atenciones/signos.html', {'form': form, 'atencion': atencion, 'signos': signos})
+
+
+@login_required
+@rol_requerido(*ROLES_GESTION_ATENCIONES)
+@require_http_methods(['POST'])
+def agregar_receta(request, pk):
+    """Agrega un medicamento a la receta de una atención (descuenta stock)."""
+    atencion = get_object_or_404(Atencion, pk=pk)
+    form = RecetaForm(request.POST)
+    if form.is_valid():
+        item = form.save(commit=False)
+        item.atencion = atencion
+        item.save()
+        messages.success(
+            request,
+            f'{item.cantidad} {item.medicamento.unidad} de {item.medicamento.nombre} '
+            'agregados a la receta.',
+        )
+    else:
+        for errores in form.errors.values():
+            for error in errores:
+                messages.error(request, error)
+    return redirect('atenciones:detalle', pk=pk)
 
 
 @login_required

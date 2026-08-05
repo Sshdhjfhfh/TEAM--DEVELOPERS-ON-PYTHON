@@ -10,6 +10,7 @@ from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 
 from accounts.decorators import ROLES_AGENDA_CITAS, rol_requerido
@@ -166,6 +167,71 @@ def reservar_cita(request):
         )
         return redirect('portal:mis_citas')
     return render(request, 'portal/reservar_cita.html', {'form': form})
+
+
+@login_required
+def mi_cola(request):
+    """Posición del estudiante en la cola de atención del día."""
+    estudiante = _estudiante_de_usuario(request.user)
+    if estudiante is None:
+        return redirect('portal:inicio')
+    paciente = estudiante.paciente
+
+    activas = Atencion.objects.filter(
+        estado__in=[Atencion.Estado.EN_ESPERA, Atencion.Estado.EN_ATENCION],
+        fecha_atencion__date=timezone.localdate(),
+    ).select_related('paciente')
+
+    orden_triage = {
+        Atencion.NivelTriage.ROJO: 0,
+        Atencion.NivelTriage.NARANJA: 1,
+        Atencion.NivelTriage.AMARILLO: 2,
+        Atencion.NivelTriage.VERDE: 3,
+        Atencion.NivelTriage.AZUL: 4,
+    }
+    cola = sorted(
+        activas,
+        key=lambda a: (orden_triage[a.nivel_triage], a.fecha_atencion),
+    )
+
+    mi_atencion = None
+    mi_posicion = None
+    en_espera = sum(1 for a in cola if a.estado == Atencion.Estado.EN_ESPERA)
+    if paciente:
+        for i, atencion in enumerate(cola, start=1):
+            if atencion.paciente_id == paciente.pk:
+                mi_atencion = atencion
+                mi_posicion = i
+                break
+
+    return render(request, 'portal/mi_cola.html', {
+        'estudiante': estudiante,
+        'cola': cola,
+        'en_espera': en_espera,
+        'mi_atencion': mi_atencion,
+        'mi_posicion': mi_posicion,
+    })
+
+
+@login_required
+def mi_historia_clinica(request):
+    """Historia clínica del estudiante: atenciones previas con diagnóstico y receta."""
+    estudiante = _estudiante_de_usuario(request.user)
+    if estudiante is None:
+        return redirect('portal:inicio')
+    paciente = estudiante.paciente
+    if paciente is None:
+        return render(request, 'portal/historia_clinica.html', {'estudiante': estudiante, 'atenciones': []})
+    atenciones = (
+        paciente.atenciones
+        .select_related('medico')
+        .prefetch_related('receta__medicamento')
+        .order_by('-fecha_atencion')
+    )
+    return render(request, 'portal/historia_clinica.html', {
+        'estudiante': estudiante,
+        'atenciones': atenciones,
+    })
 
 
 @login_required
