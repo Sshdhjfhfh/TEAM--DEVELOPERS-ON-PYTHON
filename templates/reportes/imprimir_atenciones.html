@@ -1,0 +1,40 @@
+{% extends 'reportes/imprimir_base.html' %}
+{% block title %}Reporte de atenciones — Tópico UNH{% endblock %}
+{% block encabezado %}
+    Reporte de atenciones - {% if periodo == 'hoy' %}Hoy{% elif periodo == 'semana' %}Últimos 7 días{% else %}Últimos 30 días{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-sm table-bordered mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Fecha</th>
+                    <th>Paciente</th>
+                    <th>DNI</th>
+                    <th>Médico</th>
+                    <th>Motivo</th>
+                    <th>Triage</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in atenciones %}
+                <tr>
+                    <td>{{ a.fecha_atencion|date:'d/m/Y H:i' }}</td>
+                    <td>{{ a.paciente.nombre_completo }}</td>
+                    <td>{{ a.paciente.dni }}</td>
+                    <td>{{ a.medico_nombre }}</td>
+                    <td>{{ a.motivo_consulta|truncatechars:40 }}</td>
+                    <td>{{ a.get_nivel_triage_display }}</td>
+                    <td>{{ a.get_estado_display }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center text-muted py-4">No hay atenciones en el periodo.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

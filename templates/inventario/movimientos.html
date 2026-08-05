@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}Movimientos de inventario — Tópico UNH{% endblock %}
+{% block header %}Movimientos de inventario{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <form method="get" class="d-flex gap-2">
+        <select name="tipo" class="form-select" onchange="this.form.submit()">
+            <option value="">Todos los tipos</option>
+            <option value="ENTRADA" {% if tipo == 'ENTRADA' %}selected{% endif %}>Entradas</option>
+            <option value="SALIDA" {% if tipo == 'SALIDA' %}selected{% endif %}>Salidas</option>
+            <option value="AJUSTE" {% if tipo == 'AJUSTE' %}selected{% endif %}>Ajustes</option>
+        </select>
+    </form>
+    <a href="{% url 'inventario:registrar_movimiento' %}" class="btn btn-primary"><i class="bi bi-plus"></i> Nuevo movimiento</a>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Fecha</th>
+                    <th>Medicamento</th>
+                    <th>Tipo</th>
+                    <th>Cantidad</th>
+                    <th>Motivo</th>
+                    <th>Usuario</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for mv in movimientos %}
+                <tr>
+                    <td>{{ mv.fecha|date:'d/m/Y H:i' }}</td>
+                    <td class="fw-semibold">{{ mv.medicamento.nombre }}</td>
+                    <td>
+                        {% if mv.tipo == 'ENTRADA' %}<span class="badge text-bg-success">Entrada</span>
+                        {% elif mv.tipo == 'SALIDA' %}<span class="badge text-bg-danger">Salida</span>
+                        {% else %}<span class="badge text-bg-secondary">Ajuste</span>{% endif %}
+                    </td>
+                    <td>{{ mv.cantidad }}</td>
+                    <td>{{ mv.motivo|default:'—' }}</td>
+                    <td>{{ mv.usuario_nombre }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center text-muted py-4">No hay movimientos registrados.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% load static %}<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Sistema de Gestión del Tópico UNH">
+    <title>{% block title %}Tópico UNH{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
+</head>
+<body>
+<div class="auth-split">
+    <aside class="auth-banner d-none d-lg-flex">
+        <div class="auth-banner-inner">
+            <img src="{% static 'img/unh-logo.png' %}" alt="Logo UNH" class="auth-banner-logo">
+            <h1 class="auth-banner-title">{% block banner_titulo %}Sistema de Gestión del Tópico{% endblock %}</h1>
+            <p class="auth-banner-subtitle">{% block banner_subtitulo %}Universidad Nacional de Huancavelica{% endblock %}</p>
+            <ul class="auth-banner-features list-unstyled">
+                {% block banner_features %}
+                <li><i class="bi bi-people"></i> Gestión de pacientes con historial clínico</li>
+                <li><i class="bi bi-clipboard2-pulse"></i> Atenciones con triage y signos vitales</li>
+                <li><i class="bi bi-box-seam"></i> Inventario de medicamentos e insumos</li>
+                <li><i class="bi bi-bar-chart"></i> Reportes e indicadores en tiempo real</li>
+                {% endblock %}
+            </ul>
+            <div class="auth-banner-footer">
+                {% block banner_accion %}{% endblock %}
+            </div>
+        </div>
+    </aside>
+
+    <main class="auth-main">
+        <div class="auth-card-wrap">
+            <div class="text-center d-lg-none mb-3">
+                <img src="{% static 'img/unh-logo.png' %}" alt="Logo UNH" height="56">
+            </div>
+            <div class="auth-card-custom">
+                {% block auth_panel %}{% endblock %}
+            </div>
+            <p class="text-center text-muted small mt-3 mb-0">Sistema de Gestión del Tópico - UNH</p>
+        </div>
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

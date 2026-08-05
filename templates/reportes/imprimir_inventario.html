@@ -1,0 +1,44 @@
+{% extends 'reportes/imprimir_base.html' %}
+{% block title %}Reporte de inventario — Tópico UNH{% endblock %}
+{% block encabezado %}
+    Reporte de inventario - Estado del almacén ({{ total_criticos }} ítems con stock crítico)
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-sm table-bordered mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Medicamento</th>
+                    <th>Categoría</th>
+                    <th>Unidad</th>
+                    <th>Stock actual</th>
+                    <th>Stock mínimo</th>
+                    <th>Crítico</th>
+                    <th>Precio (S/)</th>
+                    <th>Vencimiento</th>
+                    <th>Proveedor</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in medicamentos %}
+                <tr class="{% if m.stock_critico %}table-danger{% endif %}">
+                    <td>{{ m.nombre }}</td>
+                    <td>{{ m.get_categoria_display }}</td>
+                    <td>{{ m.unidad }}</td>
+                    <td>{{ m.stock_actual }}</td>
+                    <td>{{ m.stock_minimo }}</td>
+                    <td>{% if m.stock_critico %}Sí{% else %}No{% endif %}</td>
+                    <td>{{ m.precio_unitario }}</td>
+                    <td>{{ m.fecha_vencimiento|date:'d/m/Y'|default:'—' }}</td>
+                    <td>{{ m.proveedor|default:'—' }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="9" class="text-center text-muted py-4">No hay medicamentos registrados.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

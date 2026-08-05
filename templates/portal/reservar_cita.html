@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}Reservar cita — Tópico UNH{% endblock %}
+{% block header %}Reservar cita{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body p-4">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i>
+                    El Tópico atiende de lunes a viernes de 08:00 a 12:30 y de 14:00 a 16:30.
+                    Las citas se reservan con hasta 30 días de anticipación.
+                    Solo puede tener una cita activa a la vez.
+                </div>
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    {% include 'partials/_form.html' %}
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Reservar</button>
+                        <a href="{% url 'portal:mis_citas' %}" class="btn btn-outline-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const fechaInput = document.getElementById('id_fecha');
+    if (fechaInput) {
+        fechaInput.addEventListener('change', function () {
+            if (this.value) {
+                const url = new URL(window.location.href);
+                url.searchParams.set('fecha', this.value);
+                window.location.href = url.toString();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

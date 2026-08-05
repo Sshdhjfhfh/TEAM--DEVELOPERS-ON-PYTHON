@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}Pacientes — Tópico UNH{% endblock %}
+{% block header %}Pacientes{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <form class="d-flex gap-2" method="get">
+        <input type="search" name="q" value="{{ q }}" class="form-control" placeholder="Buscar por DNI o nombre...">
+        <button class="btn btn-outline-primary" type="submit"><i class="bi bi-search"></i></button>
+    </form>
+    {% if puede_clinico %}
+    <a href="{% url 'pacientes:crear' %}" class="btn btn-primary"><i class="bi bi-person-plus"></i> Nuevo paciente</a>
+    {% endif %}
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>DNI</th>
+                    <th>Nombres</th>
+                    <th>Sexo</th>
+                    <th>Edad</th>
+                    <th>Tipo de sangre</th>
+                    <th>Teléfono</th>
+                    <th>Alergias</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in pacientes %}
+                <tr>
+                    <td>{{ p.dni }}</td>
+                    <td class="fw-semibold">{{ p.nombre_completo }}</td>
+                    <td>{{ p.get_sexo_display }}</td>
+                    <td>{{ p.edad }}</td>
+                    <td>{% if p.tipo_sangre %}<span class="badge text-bg-danger">{{ p.tipo_sangre }}</span>{% else %}—{% endif %}</td>
+                    <td>{{ p.telefono|default:'—' }}</td>
+                    <td>{% if p.alergias %}<span class="badge text-bg-warning">Sí</span>{% else %}—{% endif %}</td>
+                    <td class="text-end">
+                        <a href="{% url 'pacientes:detalle' p.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8" class="text-center text-muted py-4">No hay pacientes registrados.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}Mi perfil — Tópico UNH{% endblock %}
+{% block header %}Mi perfil{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="bi bi-person-circle display-1 text-primary"></i>
+                <h4 class="mt-2">{{ user.get_full_name|default:user.username }}</h4>
+                <span class="badge text-bg-primary">{{ user.profile.get_role_display }}</span>
+                <hr>
+                <p class="mb-1 text-muted">@{{ user.username }}</p>
+                <p class="mb-1 text-muted">{{ user.email }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-white fw-bold"><i class="bi bi-card-list"></i> Datos del perfil</div>
+            <div class="card-body">
+                <dl class="row detalle-lista mb-0">
+                    <dt class="col-sm-4">Nombres</dt>
+                    <dd class="col-sm-8">{{ user.first_name|default:'—' }}</dd>
+                    <dt class="col-sm-4">Apellidos</dt>
+                    <dd class="col-sm-8">{{ user.last_name|default:'—' }}</dd>
+                    <dt class="col-sm-4">Rol</dt>
+                    <dd class="col-sm-8">{{ user.profile.get_role_display }}</dd>
+                    <dt class="col-sm-4">N° colegiatura</dt>
+                    <dd class="col-sm-8">{{ user.profile.colegiatura|default:'—' }}</dd>
+                    <dt class="col-sm-4">Teléfono</dt>
+                    <dd class="col-sm-8">{{ user.profile.telefono|default:'—' }}</dd>
+                    <dt class="col-sm-4">Fecha de registro</dt>
+                    <dd class="col-sm-8">{{ user.date_joined|date:'d/m/Y H:i' }}</dd>
+                </dl>
+                <a href="/admin/accounts/profile/{{ user.profile.pk }}/change/" class="btn btn-outline-primary mt-3">
+                    <i class="bi bi-pencil"></i> Editar perfil
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

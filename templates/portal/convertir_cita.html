@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}Atender cita — Tópico UNH{% endblock %}
+{% block header %}Atender cita{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body p-4">
+                <div class="alert alert-success">
+                    <i class="bi bi-check2-circle"></i>
+                    Al confirmar, la cita se convertirá en una atención médica registrada
+                    en el módulo de Atenciones con la ficha del estudiante vinculada.
+                </div>
+                <dl class="row detalle-lista">
+                    <dt class="col-sm-4">Estudiante</dt>
+                    <dd class="col-sm-8 fw-semibold">{{ cita.estudiante.nombre_completo }}</dd>
+                    <dt class="col-sm-4">Código / DNI</dt>
+                    <dd class="col-sm-8">{{ cita.estudiante.codigo }} / {{ cita.estudiante.dni }}</dd>
+                    <dt class="col-sm-4">Escuela</dt>
+                    <dd class="col-sm-8">{{ cita.estudiante.get_escuela_display }}</dd>
+                    <dt class="col-sm-4">Fecha y hora</dt>
+                    <dd class="col-sm-8">{{ cita.fecha|date:'d/m/Y' }} a las {{ cita.hora|time:'H:i' }}</dd>
+                    <dt class="col-sm-4">Motivo</dt>
+                    <dd class="col-sm-8">{{ cita.motivo|linebreaksbr }}</dd>
+                </dl>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check2-circle"></i> Confirmar y crear atención
+                        </button>
+                        <a href="{% url 'portal:lista_citas' %}" class="btn btn-outline-secondary">Volver a la agenda</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

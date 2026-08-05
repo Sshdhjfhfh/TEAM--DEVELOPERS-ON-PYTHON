@@ -1,0 +1,18 @@
+# --- Framework principal ---
+Django==5.1
+djangorestframework==3.17.1
+
+# --- Dependencias de Django ---
+asgiref==3.11.1
+sqlparse==0.5.5
+tzdata==2026.2
+
+# --- Imágenes (campos ImageField) ---
+pillow==12.2.0
+
+# --- Pruebas ---
+pytest==9.1.0
+pytest-django==4.12.0
+
+# --- Utilitarios ---
+colorama==0.4.6

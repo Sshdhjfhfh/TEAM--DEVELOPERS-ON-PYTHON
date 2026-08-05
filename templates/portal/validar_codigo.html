@@ -1,0 +1,69 @@
+{% extends 'auth_base.html' %}
+{% load static %}
+{% block title %}Portal de Estudiantes — Tópico UNH{% endblock %}
+
+{% block banner_titulo %}Portal de Estudiantes{% endblock %}
+{% block banner_subtitulo %}Reserva tus citas de atención en el Tópico UNH{% endblock %}
+{% block banner_features %}
+    <li><i class="bi bi-person-vcard"></i> Registro validado contra el padrón de matrícula</li>
+    <li><i class="bi bi-mortarboard"></i> Datos académicos autocompletados</li>
+    <li><i class="bi bi-calendar2-check"></i> Reserva de citas en los horarios del Tópico</li>
+    <li><i class="bi bi-clock-history"></i> Consulta y cancelación de tus citas</li>
+{% endblock %}
+
+{% block banner_accion %}
+    <span class="me-2">¿Eres personal del Tópico?</span>
+    <a href="{% url 'accounts:login' %}" class="btn btn-light">Iniciar sesión</a>
+{% endblock %}
+
+{% block auth_panel %}
+    <div class="text-center mb-4">
+        <h4 class="fw-bold mb-1">Portal de Estudiantes</h4>
+        <p class="text-muted mb-0">Verifique su código y DNI para registrarse</p>
+    </div>
+
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger py-2">
+            <i class="bi bi-exclamation-triangle"></i> {{ form.non_field_errors }}
+        </div>
+    {% endif %}
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label fw-semibold" for="{{ form.codigo.id_for_label }}">
+                Código de estudiante <span class="text-danger">*</span>
+            </label>
+            <div class="input-group input-group-lg">
+                <span class="input-group-text"><i class="bi bi-person-vcard"></i></span>
+                {{ form.codigo }}
+            </div>
+            {% for error in form.codigo.errors %}
+                <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+        </div>
+        <div class="mb-4">
+            <label class="form-label fw-semibold" for="{{ form.dni.id_for_label }}">
+                DNI <span class="text-danger">*</span>
+            </label>
+            <div class="input-group input-group-lg">
+                <span class="input-group-text"><i class="bi bi-credit-card"></i></span>
+                {{ form.dni }}
+            </div>
+            {% for error in form.dni.errors %}
+                <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+        </div>
+        <button type="submit" class="btn btn-primary btn-auth">
+            <i class="bi bi-check-circle"></i> Verificar datos
+        </button>
+    </form>
+
+    <div class="auth-divider">Estudiante registrado</div>
+
+    <div class="text-center">
+        <a href="{% url 'accounts:login' %}" class="btn btn-outline-primary btn-auth">
+            <i class="bi bi-box-arrow-in-right"></i> Iniciar sesión
+        </a>
+    </div>
+{% endblock %}

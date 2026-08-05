@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Mi portal — Tópico UNH{% endblock %}
+{% block header %}Mi portal{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="p-3 rounded bg-light">
+                        <img src="{% static 'img/unh-logo.png' %}" alt="Logo UNH" height="72">
+                    </div>
+                    <div>
+                        <h4 class="mb-1">{{ estudiante.nombre_completo }}</h4>
+                        <p class="text-muted mb-1">Estudiante de {{ estudiante.get_escuela_display }} - {{ estudiante.ciclo }}° ciclo</p>
+                        <span class="badge text-bg-success">Matrícula activa</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-white fw-bold d-flex justify-content-between align-items-center">
+                <span>Próximas citas</span>
+                <a href="{% url 'portal:reservar_cita' %}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-calendar-plus"></i> Reservar cita
+                </a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Hora</th>
+                            <th>Motivo</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cita in proximas_citas %}
+                        <tr>
+                            <td>{{ cita.fecha|date:'d/m/Y' }}</td>
+                            <td>{{ cita.hora|time:'H:i' }}</td>
+                            <td>{{ cita.motivo|truncatechars:50 }}</td>
+                            <td><span class="badge text-bg-{% if cita.estado == 'PENDIENTE' %}warning{% else %}info{% endif %}">{{ cita.get_estado_display }}</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-4">
+                                No tienes citas vigentes.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-body text-center">
+                <i class="bi bi-journal-medical display-4 text-primary"></i>
+                <h5 class="mt-2">Historial de citas</h5>
+                <p class="stat-valor mb-0">{{ historial_citas }}</p>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body text-center">
+                <img src="{% static 'img/unh-escuela.png' %}" alt="Escuela profesional" class="img-fluid mb-3" style="max-height: 110px;">
+                <h5 class="mt-2">{{ estudiante.get_escuela_display }}</h5>
+                <p class="text-muted mb-0">{{ estudiante.codigo }} - DNI {{ estudiante.dni }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
