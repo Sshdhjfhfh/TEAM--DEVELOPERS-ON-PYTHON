@@ -2,6 +2,7 @@
 
 from datetime import time, timedelta
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import MinLengthValidator
 from django.db import models
@@ -40,7 +41,7 @@ class Estudiante(models.Model):
     correo_institucional = models.EmailField('Correo institucional', blank=True)
     matriculado = models.BooleanField('Matrícula activa', default=True)
     user = models.OneToOneField(
-        'auth.User',
+        settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,

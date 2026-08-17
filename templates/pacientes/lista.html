@@ -6,6 +6,10 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
     <form class="d-flex gap-2" method="get">
         <input type="search" name="q" value="{{ q }}" class="form-control" placeholder="Buscar por DNI o nombre...">
+        <select name="estado" class="form-select" style="width:auto">
+            <option value="activos" {% if estado == 'activos' %}selected{% endif %}>Activos</option>
+            <option value="inactivos" {% if estado == 'inactivos' %}selected{% endif %}>Inactivos</option>
+        </select>
         <button class="btn btn-outline-primary" type="submit"><i class="bi bi-search"></i></button>
     </form>
     {% if puede_clinico %}
@@ -25,6 +29,7 @@
                     <th>Tipo de sangre</th>
                     <th>Teléfono</th>
                     <th>Alergias</th>
+                    <th>Estado</th>
                     <th></th>
                 </tr>
             </thead>
@@ -38,6 +43,13 @@
                     <td>{% if p.tipo_sangre %}<span class="badge text-bg-danger">{{ p.tipo_sangre }}</span>{% else %}—{% endif %}</td>
                     <td>{{ p.telefono|default:'—' }}</td>
                     <td>{% if p.alergias %}<span class="badge text-bg-warning">Sí</span>{% else %}—{% endif %}</td>
+                    <td>
+                        {% if p.activo %}
+                            <span class="badge text-bg-success"><i class="bi bi-check-circle"></i> Activo</span>
+                        {% else %}
+                            <span class="badge text-bg-danger"><i class="bi bi-x-circle"></i> Inactivo</span>
+                        {% endif %}
+                    </td>
                     <td class="text-end">
                         <a href="{% url 'pacientes:detalle' p.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></a>
                     </td>

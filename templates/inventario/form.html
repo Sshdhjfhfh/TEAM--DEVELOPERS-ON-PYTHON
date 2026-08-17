@@ -7,9 +7,67 @@
     <div class="col-lg-8">
         <div class="card">
             <div class="card-body p-4">
+                {% if errores %}
+                    <div class="alert alert-danger py-2">
+                        <i class="bi bi-exclamation-triangle"></i> {{ errores }}
+                    </div>
+                {% endif %}
                 <form method="post" novalidate>
                     {% csrf_token %}
-                    {% include 'partials/_form.html' %}
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label class="form-label" for="id_nombre">Nombre <span class="text-danger">*</span></label>
+                            <input type="text" name="nombre" id="id_nombre" class="form-control" maxlength="150"
+                                   value="{% if datos %}{{ datos.nombre }}{% elif medicamento %}{{ medicamento.nombre }}{% endif %}" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label" for="id_categoria">Categoría</label>
+                            <select name="categoria" id="id_categoria" class="form-select">
+                                {% for value, label in categorias %}
+                                    <option value="{{ value }}"
+                                            {% if datos and datos.categoria == value %}selected{% elif not datos and medicamento and medicamento.categoria == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="id_descripcion">Descripción</label>
+                        <textarea name="descripcion" id="id_descripcion" class="form-control" rows="2">{% if datos %}{{ datos.descripcion }}{% elif medicamento %}{{ medicamento.descripcion }}{% endif %}</textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label" for="id_unidad">Unidad de medida</label>
+                            <input type="text" name="unidad" id="id_unidad" class="form-control" maxlength="20"
+                                   value="{% if datos %}{{ datos.unidad }}{% elif medicamento %}{{ medicamento.unidad }}{% endif %}">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label" for="id_stock_actual">Stock actual</label>
+                            <input type="number" name="stock_actual" id="id_stock_actual" class="form-control" min="0"
+                                   value="{% if datos %}{{ datos.stock_actual }}{% elif medicamento %}{{ medicamento.stock_actual }}{% endif %}">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label" for="id_stock_minimo">Stock mínimo</label>
+                            <input type="number" name="stock_minimo" id="id_stock_minimo" class="form-control" min="0"
+                                   value="{% if datos %}{{ datos.stock_minimo }}{% elif medicamento %}{{ medicamento.stock_minimo }}{% endif %}">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label" for="id_precio_unitario">Precio unitario (S/)</label>
+                            <input type="number" name="precio_unitario" id="id_precio_unitario" class="form-control" step="0.01" min="0"
+                                   value="{% if datos %}{{ datos.precio_unitario }}{% elif medicamento %}{{ medicamento.precio_unitario }}{% endif %}">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label" for="id_fecha_vencimiento">Fecha de vencimiento</label>
+                            <input type="date" name="fecha_vencimiento" id="id_fecha_vencimiento" class="form-control"
+                                   value="{% if datos %}{{ datos.fecha_vencimiento }}{% elif medicamento %}{{ medicamento.fecha_vencimiento|date:'Y-m-d' }}{% endif %}">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label" for="id_proveedor">Proveedor</label>
+                            <input type="text" name="proveedor" id="id_proveedor" class="form-control" maxlength="100"
+                                   value="{% if datos %}{{ datos.proveedor }}{% elif medicamento %}{{ medicamento.proveedor }}{% endif %}">
+                        </div>
+                    </div>
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Guardar</button>
                         <a href="{% if medicamento %}{% url 'inventario:detalle' medicamento.pk %}{% else %}{% url 'inventario:lista' %}{% endif %}"

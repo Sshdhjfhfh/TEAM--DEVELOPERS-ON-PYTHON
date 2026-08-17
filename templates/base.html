@@ -13,7 +13,7 @@
 {% if user.is_authenticated %}
 <div class="d-flex">
     <aside class="sidebar">
-        {% if user.profile.es_estudiante %}
+        {% if user.role == 'ESTUDIANTE' %}
             <a href="{% url 'portal:inicio' %}" class="d-flex align-items-center gap-2 sidebar-brand">
                 <img src="{% static 'img/unh-logo.png' %}" alt="Logo UNH" height="32">
                 <span class="fw-bold">Portal Estudiantes</span>
@@ -72,12 +72,14 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link {% if request.resolver_match.url_name == 'api' %}active{% endif %}"
-                       href="/api/"><i class="bi bi-code-slash"></i> API REST</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.app_name == 'portal' %}active{% endif %}"
                        href="{% url 'portal:lista_citas' %}"><i class="bi bi-calendar2-week"></i> Agenda de citas</a>
                 </li>
+                {% if user.is_superuser %}
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'lista_usuarios' or request.resolver_match.url_name == 'crear_usuario' or request.resolver_match.url_name == 'editar_usuario' %}active{% endif %}"
+                       href="{% url 'accounts:lista_usuarios' %}"><i class="bi bi-people-fill"></i> Usuarios</a>
+                </li>
+                {% endif %}
             </ul>
             <div class="sidebar-footer">
                 <a href="/admin/" class="text-white-50 text-decoration-none small">
@@ -92,7 +94,7 @@
             <div class="container-fluid">
                 <span class="topbar-title">{% block header %}{% endblock %}</span>
                 <div class="d-flex align-items-center gap-3 ms-auto">
-                    {% if not user.profile.es_estudiante %}
+                    {% if user.role != 'ESTUDIANTE' %}
                     <a href="{% url 'atenciones:cola' %}" class="btn btn-sm btn-outline-danger position-relative">
                         <i class="bi bi-exclamation-octagon"></i> Triage
                     </a>
@@ -104,7 +106,7 @@
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li><span class="dropdown-item-text small">
-                                <span class="badge text-bg-primary">{{ user.profile.get_role_display }}</span>
+                                <span class="badge text-bg-primary">{{ user.get_role_display }}</span>
                             </span></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{% url 'accounts:perfil' %}">

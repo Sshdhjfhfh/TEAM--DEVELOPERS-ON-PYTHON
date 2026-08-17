@@ -1,14 +1,15 @@
-from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.urls import reverse
+
+from accounts.models import CustomUser
 
 from .models import Medicamento, MovimientoInventario
 
 
 class InventarioModelTests(TestCase):
     def setUp(self):
-        self.usuario = User.objects.create_user(username='test', password='pass12345')
+        self.usuario = CustomUser.objects.create_user(username='test', password='pass12345')
 
     def crear_medicamento(self, stock=10, minimo=5):
         return Medicamento.objects.create(
@@ -59,9 +60,9 @@ class InventarioModelTests(TestCase):
 
 class InventarioViewTests(TestCase):
     def setUp(self):
-        self.usuario = User.objects.create_user(username='test', password='pass12345')
-        self.usuario.profile.role = 'FARMACEUTICO'
-        self.usuario.profile.save()
+        self.usuario = CustomUser.objects.create_user(username='test', password='pass12345')
+        self.usuario.role = 'FARMACEUTICO'
+        self.usuario.save(update_fields=['role'])
         self.client.force_login(self.usuario)
         self.med = Medicamento.objects.create(
             nombre='Ibuprofeno 400mg', stock_actual=50, stock_minimo=10,

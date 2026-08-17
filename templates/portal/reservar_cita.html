@@ -13,9 +13,35 @@
                     Las citas se reservan con hasta 30 días de anticipación.
                     Solo puede tener una cita activa a la vez.
                 </div>
+                {% if errores %}
+                    <div class="alert alert-danger py-2">
+                        <i class="bi bi-exclamation-triangle"></i> {{ errores }}
+                    </div>
+                {% endif %}
                 <form method="post" novalidate>
                     {% csrf_token %}
-                    {% include 'partials/_form.html' %}
+                    <div class="mb-3">
+                        <label class="form-label" for="id_fecha">Fecha <span class="text-danger">*</span></label>
+                        <input type="date" name="fecha" id="id_fecha" class="form-control"
+                               min="{{ hoy }}" value="{{ fecha }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="id_hora">Hora <span class="text-danger">*</span></label>
+                        <select name="hora" id="id_hora" class="form-select" required>
+                            <option value="">Seleccione...</option>
+                            {% for slot in slots %}
+                                <option value="{{ slot|time:'H:i' }}" {% if datos.hora == slot|time:'H:i' %}selected{% endif %}>
+                                    {{ slot|time:'H:i' }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        {% if not slots %}<div class="form-text text-danger">No hay horarios disponibles para la fecha seleccionada.</div>{% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="id_motivo">Motivo de la consulta <span class="text-danger">*</span></label>
+                        <textarea name="motivo" id="id_motivo" class="form-control" rows="3"
+                                  placeholder="Describa brevemente el motivo de su consulta" required>{{ datos.motivo }}</textarea>
+                    </div>
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Reservar</button>
                         <a href="{% url 'portal:mis_citas' %}" class="btn btn-outline-secondary">Cancelar</a>

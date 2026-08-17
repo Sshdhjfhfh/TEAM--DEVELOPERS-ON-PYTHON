@@ -7,10 +7,10 @@ Uso:
 
 from datetime import date, timedelta
 
-from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
+from accounts.models import CustomUser
 from atenciones.models import Atencion, RecetaMedicamento, SignosVitales
 from inventario.models import Medicamento, MovimientoInventario
 from pacientes.models import Paciente
@@ -32,7 +32,7 @@ class Command(BaseCommand):
             self._reset()
         self.stdout.write('Cargando datos de demostración...')
 
-        admin, _ = User.objects.get_or_create(
+        admin, _ = CustomUser.objects.get_or_create(
             username='admin',
             defaults={
                 'first_name': 'Administrador',
@@ -43,11 +43,10 @@ class Command(BaseCommand):
             },
         )
         admin.set_password('admin123')
-        admin.profile.role = 'ADMIN'
-        admin.profile.save(update_fields=['role'])
+        admin.role = 'ADMIN'
         admin.save()
 
-        medico, _ = User.objects.get_or_create(
+        medico, _ = CustomUser.objects.get_or_create(
             username='medico',
             defaults={
                 'first_name': 'Juan',
@@ -56,12 +55,11 @@ class Command(BaseCommand):
             },
         )
         medico.set_password('medico123')
-        medico.profile.role = 'MEDICO'
-        medico.profile.colegiatura = 'CMP-12345'
-        medico.profile.save()
+        medico.role = 'MEDICO'
+        medico.colegiatura = 'CMP-12345'
         medico.save()
 
-        enfermero, _ = User.objects.get_or_create(
+        enfermero, _ = CustomUser.objects.get_or_create(
             username='enfermera',
             defaults={
                 'first_name': 'María',
@@ -70,11 +68,10 @@ class Command(BaseCommand):
             },
         )
         enfermero.set_password('enfermera123')
-        enfermero.profile.role = 'ENFERMERO'
-        enfermero.profile.save()
+        enfermero.role = 'ENFERMERO'
         enfermero.save()
 
-        farmacia, _ = User.objects.get_or_create(
+        farmacia, _ = CustomUser.objects.get_or_create(
             username='farmacia',
             defaults={
                 'first_name': 'Carlos',
@@ -83,8 +80,7 @@ class Command(BaseCommand):
             },
         )
         farmacia.set_password('farmacia123')
-        farmacia.profile.role = 'FARMACEUTICO'
-        farmacia.profile.save()
+        farmacia.role = 'FARMACEUTICO'
         farmacia.save()
 
         # --- Pacientes de ejemplo ---
@@ -216,7 +212,7 @@ class Command(BaseCommand):
             estudiantes.append(estudiante)
 
         # Estudiante con cuenta ya creada (para probar el portal con acceso directo).
-        estudiante_con_cuenta, _ = User.objects.get_or_create(
+        estudiante_con_cuenta, _ = CustomUser.objects.get_or_create(
             username='estudiante',
             defaults={
                 'first_name': estudiantes[0].nombres,
@@ -225,8 +221,7 @@ class Command(BaseCommand):
             },
         )
         estudiante_con_cuenta.set_password('estudiante123')
-        estudiante_con_cuenta.profile.role = 'ESTUDIANTE'
-        estudiante_con_cuenta.profile.save()
+        estudiante_con_cuenta.role = 'ESTUDIANTE'
         estudiante_con_cuenta.save()
         estudiantes[0].user = estudiante_con_cuenta
         estudiantes[0].paciente = pacientes[0]
@@ -283,5 +278,5 @@ class Command(BaseCommand):
         self.stdout.write('Eliminando datos existentes...')
         for modelo in (Cita, Estudiante, Atencion, SignosVitales, RecetaMedicamento, Medicamento, MovimientoInventario, Paciente):
             modelo.objects.all().delete()
-        for user in User.objects.filter(username__in=['admin', 'medico', 'enfermera', 'farmacia', 'estudiante']):
+        for user in CustomUser.objects.filter(username__in=['admin', 'medico', 'enfermera', 'farmacia', 'estudiante']):
             user.delete()

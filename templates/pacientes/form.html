@@ -7,9 +7,74 @@
     <div class="col-lg-8">
         <div class="card">
             <div class="card-body p-4">
+                {% if errores %}
+                    <div class="alert alert-danger py-2">
+                        <i class="bi bi-exclamation-triangle"></i> {{ errores }}
+                    </div>
+                {% endif %}
                 <form method="post" novalidate>
                     {% csrf_token %}
-                    {% include 'partials/_form.html' %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="id_nombres">Nombres <span class="text-danger">*</span></label>
+                            <input type="text" name="nombres" id="id_nombres" class="form-control"
+                                   value="{% if datos %}{{ datos.nombres }}{% elif paciente %}{{ paciente.nombres }}{% endif %}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="id_apellidos">Apellidos <span class="text-danger">*</span></label>
+                            <input type="text" name="apellidos" id="id_apellidos" class="form-control"
+                                   value="{% if datos %}{{ datos.apellidos }}{% elif paciente %}{{ paciente.apellidos }}{% endif %}" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="id_dni">DNI <span class="text-danger">*</span></label>
+                            <input type="text" name="dni" id="id_dni" class="form-control" maxlength="8"
+                                   value="{% if datos %}{{ datos.dni }}{% elif paciente %}{{ paciente.dni }}{% endif %}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="id_fecha_nacimiento">Fecha de nacimiento <span class="text-danger">*</span></label>
+                            <input type="date" name="fecha_nacimiento" id="id_fecha_nacimiento" class="form-control"
+                                   value="{% if datos %}{{ datos.fecha_nacimiento }}{% elif paciente %}{{ paciente.fecha_nacimiento|date:'Y-m-d' }}{% endif %}" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="id_sexo">Sexo <span class="text-danger">*</span></label>
+                            <select name="sexo" id="id_sexo" class="form-select" required>
+                                {% for value, label in sexos %}
+                                    <option value="{{ value }}"
+                                            {% if datos and datos.sexo == value %}selected{% elif not datos and paciente and paciente.sexo == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="id_tipo_sangre">Tipo de sangre</label>
+                            <select name="tipo_sangre" id="id_tipo_sangre" class="form-select">
+                                <option value="">Desconocido</option>
+                                {% for value, label in tipos_sangre %}
+                                    <option value="{{ value }}"
+                                            {% if datos and datos.tipo_sangre == value %}selected{% elif not datos and paciente and paciente.tipo_sangre == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="id_telefono">Teléfono</label>
+                            <input type="text" name="telefono" id="id_telefono" class="form-control" maxlength="20"
+                                   value="{% if datos %}{{ datos.telefono }}{% elif paciente %}{{ paciente.telefono }}{% endif %}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="id_direccion">Dirección</label>
+                            <input type="text" name="direccion" id="id_direccion" class="form-control" maxlength="200"
+                                   value="{% if datos %}{{ datos.direccion }}{% elif paciente %}{{ paciente.direccion }}{% endif %}">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="id_alergias">Alergias</label>
+                        <textarea name="alergias" id="id_alergias" class="form-control" rows="2">{% if datos %}{{ datos.alergias }}{% elif paciente %}{{ paciente.alergias }}{% endif %}</textarea>
+                    </div>
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Guardar</button>
                         <a href="{% if paciente %}{% url 'pacientes:detalle' paciente.pk %}{% else %}{% url 'pacientes:lista' %}{% endif %}"

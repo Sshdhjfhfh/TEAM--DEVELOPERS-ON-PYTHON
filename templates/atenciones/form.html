@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% block title %}{{ titulo }} — Tópico UNH{% endblock %}
 {% block header %}{{ titulo }}{% endblock %}
 
@@ -7,9 +7,73 @@
     <div class="col-lg-9">
         <div class="card">
             <div class="card-body p-4">
+                {% if errores %}
+                    <div class="alert alert-danger py-2">
+                        <i class="bi bi-exclamation-triangle"></i> {{ errores }}
+                    </div>
+                {% endif %}
                 <form method="post" novalidate>
                     {% csrf_token %}
-                    {% include 'partials/_form.html' %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="id_paciente">Paciente <span class="text-danger">*</span></label>
+                            <select name="paciente" id="id_paciente" class="form-select" required>
+                                <option value="">Seleccione...</option>
+                                {% for p in pacientes %}
+                                    <option value="{{ p.pk }}" {% if datos and datos.paciente == p.pk|stringformat:'s' %}selected{% endif %}>{{ p.nombre_completo }} (DNI: {{ p.dni }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="id_medico">Médico / personal de salud</label>
+                            <select name="medico" id="id_medico" class="form-select">
+                                <option value="">Seleccione...</option>
+                                {% for m in medicos %}
+                                    <option value="{{ m.pk }}" {% if datos and datos.medico == m.pk|stringformat:'s' %}selected{% endif %}>{{ m.get_full_name|default:m.username }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="id_motivo_consulta">Motivo de consulta <span class="text-danger">*</span></label>
+                        <textarea name="motivo_consulta" id="id_motivo_consulta" class="form-control" rows="2" required>{% if datos %}{{ datos.motivo_consulta }}{% elif atencion %}{{ atencion.motivo_consulta }}{% endif %}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="id_anamnesis">Anamnesis</label>
+                        <textarea name="anamnesis" id="id_anamnesis" class="form-control" rows="3">{% if datos %}{{ datos.anamnesis }}{% elif atencion %}{{ atencion.anamnesis }}{% endif %}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="id_diagnostico">Diagnóstico</label>
+                        <textarea name="diagnostico" id="id_diagnostico" class="form-control" rows="2">{% if datos %}{{ datos.diagnostico }}{% elif atencion %}{{ atencion.diagnostico }}{% endif %}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="id_tratamiento">Tratamiento / indicaciones</label>
+                        <textarea name="tratamiento" id="id_tratamiento" class="form-control" rows="2">{% if datos %}{{ datos.tratamiento }}{% elif atencion %}{{ atencion.tratamiento }}{% endif %}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="id_observaciones">Observaciones</label>
+                        <textarea name="observaciones" id="id_observaciones" class="form-control" rows="2">{% if datos %}{{ datos.observaciones }}{% elif atencion %}{{ atencion.observaciones }}{% endif %}</textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="id_nivel_triage">Nivel de triage</label>
+                            <select name="nivel_triage" id="id_nivel_triage" class="form-select">
+                                {% for value, label in niveles %}
+                                    <option value="{{ value }}"
+                                            {% if datos and datos.nivel_triage == value %}selected{% elif not datos and atencion and atencion.nivel_triage == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="id_estado">Estado</label>
+                            <select name="estado" id="id_estado" class="form-select">
+                                {% for value, label in estados %}
+                                    <option value="{{ value }}"
+                                            {% if datos and datos.estado == value %}selected{% elif not datos and atencion and atencion.estado == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Guardar</button>
                         <a href="{% if atencion %}{% url 'atenciones:detalle' atencion.pk %}{% else %}{% url 'atenciones:lista' %}{% endif %}"

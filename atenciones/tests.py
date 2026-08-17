@@ -1,10 +1,10 @@
 from datetime import date
 
-from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.urls import reverse
 
+from accounts.models import CustomUser
 from inventario.models import Medicamento, MovimientoInventario
 from pacientes.models import Paciente
 
@@ -12,7 +12,7 @@ from .models import Atencion, RecetaMedicamento, SignosVitales
 
 
 def crear_contexto():
-    usuario = User.objects.create_user(username='test', password='pass12345')
+    usuario = CustomUser.objects.create_user(username='test', password='pass12345')
     paciente = Paciente.objects.create(
         nombres='Ana', apellidos='Quispe', dni='12345678',
         fecha_nacimiento=date(2001, 1, 1), sexo='F', tipo_sangre='O+',

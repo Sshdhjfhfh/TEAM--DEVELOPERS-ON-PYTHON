@@ -1,6 +1,5 @@
 from datetime import timedelta
 
-from django.contrib.auth.models import User
 from django.core import mail
 from django.core.exceptions import ValidationError
 from django.core.management import call_command
@@ -8,9 +7,9 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
+from accounts.models import CustomUser
 from atenciones.models import Atencion, RecetaMedicamento
 from inventario.models import Medicamento
-from accounts.models import Profile
 from pacientes.models import Paciente
 
 from .models import Cita, Estudiante
@@ -37,18 +36,18 @@ def _crear_estudiante(codigo='2024999999', dni='87654321', matriculado=True):
 
 def _crear_cuenta_estudiante(codigo='2024999999', dni='87654321'):
     estudiante = _crear_estudiante(codigo, dni)
-    user = User.objects.create_user(username=codigo, password='clave_segura_123')
-    user.profile.role = Profile.Role.ESTUDIANTE
-    user.profile.save()
+    user = CustomUser.objects.create_user(username=codigo, password='clave_segura_123')
+    user.role = CustomUser.Role.ESTUDIANTE
+    user.save(update_fields=['role'])
     estudiante.user = user
     estudiante.save(update_fields=['user'])
     return estudiante, user
 
 
 def _crear_personal():
-    user = User.objects.create_user(username='medico_test', password='clave_segura_123')
-    user.profile.role = Profile.Role.MEDICO
-    user.profile.save()
+    user = CustomUser.objects.create_user(username='medico_test', password='clave_segura_123')
+    user.role = CustomUser.Role.MEDICO
+    user.save(update_fields=['role'])
     return user
 
 
@@ -162,11 +161,11 @@ class RegistroPortalTests(TestCase):
             'password2': 'clave_segura_123',
         })
         self.assertEqual(respuesta.status_code, 302)
-        self.assertTrue(User.objects.filter(username='2024999999').exists())
+        self.assertTrue(CustomUser.objects.filter(username='2024999999').exists())
         estudiante = Estudiante.objects.get(codigo='2024999999')
         self.assertTrue(estudiante.tiene_cuenta)
         self.assertIsNotNone(estudiante.paciente)
-        self.assertEqual(estudiante.user.profile.role, Profile.Role.ESTUDIANTE)
+        self.assertEqual(estudiante.user.role, CustomUser.Role.ESTUDIANTE)
         self.assertEqual(Paciente.objects.get(dni='87654321').nombres, 'Prueba')
 
     def test_completar_registro_sin_sesion_redirige(self):

@@ -13,26 +13,44 @@
         <p class="text-muted mb-0">Registro de usuarios del Tópico UNH</p>
     </div>
 
-    {% if form.non_field_errors %}
+    {% if errores %}
         <div class="alert alert-danger py-2">
-            <i class="bi bi-exclamation-triangle"></i> {{ form.non_field_errors }}
+            <i class="bi bi-exclamation-triangle"></i> {{ errores }}
         </div>
     {% endif %}
 
     <form method="post" novalidate>
         {% csrf_token %}
-        {% for field in form %}
-            <div class="mb-3">
-                <label class="form-label fw-semibold" for="{{ field.id_for_label }}">
-                    {{ field.label }}{% if field.field.required %} <span class="text-danger">*</span>{% endif %}
-                </label>
-                {{ field }}
-                {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
-                {% for error in field.errors %}
-                    <div class="text-danger small">{{ error }}</div>
-                {% endfor %}
+        <div class="mb-3">
+            <label class="form-label fw-semibold" for="id_username">Nombre de usuario <span class="text-danger">*</span></label>
+            <input type="text" name="username" id="id_username" class="form-control" maxlength="150"
+                   value="{{ datos.username }}" required>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-semibold" for="id_first_name">Nombres</label>
+                <input type="text" name="first_name" id="id_first_name" class="form-control" maxlength="100"
+                       value="{{ datos.first_name }}">
             </div>
-        {% endfor %}
+            <div class="col-md-6 mb-3">
+                <label class="form-label fw-semibold" for="id_last_name">Apellidos</label>
+                <input type="text" name="last_name" id="id_last_name" class="form-control" maxlength="100"
+                       value="{{ datos.last_name }}">
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-semibold" for="id_email">Correo electrónico <span class="text-danger">*</span></label>
+            <input type="email" name="email" id="id_email" class="form-control" value="{{ datos.email }}" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-semibold" for="id_password1">Contraseña <span class="text-danger">*</span></label>
+            <input type="password" name="password1" id="id_password1" class="form-control" required>
+            <div class="form-text">Mínimo 8 caracteres, no puede ser solo numérica.</div>
+        </div>
+        <div class="mb-4">
+            <label class="form-label fw-semibold" for="id_password2">Confirmar contraseña <span class="text-danger">*</span></label>
+            <input type="password" name="password2" id="id_password2" class="form-control" required>
+        </div>
         <button type="submit" class="btn btn-primary btn-auth">
             <i class="bi bi-check-circle"></i> Registrarme
         </button>

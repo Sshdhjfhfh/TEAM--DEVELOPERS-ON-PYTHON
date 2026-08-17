@@ -1,13 +1,13 @@
-from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
 
+from accounts.models import CustomUser
 from pacientes.models import Paciente
 
 
 class ReportesViewTests(TestCase):
     def setUp(self):
-        self.usuario = User.objects.create_user(username='test', password='pass12345')
+        self.usuario = CustomUser.objects.create_user(username='test', password='pass12345')
         self.client.force_login(self.usuario)
 
     def test_dashboard(self):
@@ -34,7 +34,7 @@ class ReportesViewTests(TestCase):
 
 class ReportesExportacionTests(TestCase):
     def setUp(self):
-        self.usuario = User.objects.create_user(username='test', password='pass12345')
+        self.usuario = CustomUser.objects.create_user(username='test', password='pass12345')
         self.client.force_login(self.usuario)
         Paciente.objects.create(
             nombres='Ana',

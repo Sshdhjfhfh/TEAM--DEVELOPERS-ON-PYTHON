@@ -1,15 +1,16 @@
 from datetime import date
 
-from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.urls import reverse
+
+from accounts.models import CustomUser
 
 from .models import Paciente
 
 
 def crear_usuario(**kwargs):
-    return User.objects.create_user(
+    return CustomUser.objects.create_user(
         username=kwargs.get('username', 'test'),
         password=kwargs.get('password', 'pass12345'),
         first_name=kwargs.get('first_name', 'Test'),

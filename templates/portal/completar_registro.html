@@ -28,26 +28,48 @@
         </div>
     </div>
 
-    {% if form.non_field_errors %}
+    {% if errores %}
         <div class="alert alert-danger py-2">
-            <i class="bi bi-exclamation-triangle"></i> {{ form.non_field_errors }}
+            <i class="bi bi-exclamation-triangle"></i> {{ errores }}
         </div>
     {% endif %}
 
     <form method="post" novalidate>
         {% csrf_token %}
-        {% for field in form %}
-            <div class="mb-3">
-                <label class="form-label fw-semibold" for="{{ field.id_for_label }}">
-                    {{ field.label }}{% if field.field.required %} <span class="text-danger">*</span>{% endif %}
-                </label>
-                {{ field }}
-                {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
-                {% for error in field.errors %}
-                    <div class="text-danger small">{{ error }}</div>
+        <div class="mb-3">
+            <label class="form-label fw-semibold" for="id_fecha_nacimiento">
+                Fecha de nacimiento <span class="text-danger">*</span>
+            </label>
+            <input type="date" name="fecha_nacimiento" id="id_fecha_nacimiento" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-semibold" for="id_sexo">
+                Sexo <span class="text-danger">*</span>
+            </label>
+            <select name="sexo" id="id_sexo" class="form-select" required>
+                {% for value, label in sexos %}
+                    <option value="{{ value }}">{{ label }}</option>
                 {% endfor %}
-            </div>
-        {% endfor %}
+            </select>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-semibold" for="id_telefono">Teléfono / celular</label>
+            <input type="text" name="telefono" id="id_telefono" class="form-control" maxlength="20"
+                   value="{{ datos.telefono }}">
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-semibold" for="id_password1">
+                Contraseña <span class="text-danger">*</span>
+            </label>
+            <input type="password" name="password1" id="id_password1" class="form-control" required>
+            <div class="form-text">Mínimo 8 caracteres, no puede ser solo numérica.</div>
+        </div>
+        <div class="mb-4">
+            <label class="form-label fw-semibold" for="id_password2">
+                Confirmar contraseña <span class="text-danger">*</span>
+            </label>
+            <input type="password" name="password2" id="id_password2" class="form-control" required>
+        </div>
         <button type="submit" class="btn btn-primary btn-auth">
             <i class="bi bi-check-circle"></i> Crear mi cuenta
         </button>

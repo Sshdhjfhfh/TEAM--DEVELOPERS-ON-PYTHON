@@ -22,37 +22,35 @@
         <p class="text-muted mb-0">Verifique su código y DNI para registrarse</p>
     </div>
 
-    {% if form.non_field_errors %}
+    {% if errores %}
         <div class="alert alert-danger py-2">
-            <i class="bi bi-exclamation-triangle"></i> {{ form.non_field_errors }}
+            <i class="bi bi-exclamation-triangle"></i> {{ errores }}
         </div>
     {% endif %}
 
     <form method="post" novalidate>
         {% csrf_token %}
         <div class="mb-3">
-            <label class="form-label fw-semibold" for="{{ form.codigo.id_for_label }}">
+            <label class="form-label fw-semibold" for="id_codigo">
                 Código de estudiante <span class="text-danger">*</span>
             </label>
             <div class="input-group input-group-lg">
                 <span class="input-group-text"><i class="bi bi-person-vcard"></i></span>
-                {{ form.codigo }}
+                <input type="text" name="codigo" id="id_codigo" class="form-control"
+                       placeholder="Ej.: 2021141001" maxlength="10" autofocus required
+                       value="{{ datos.codigo }}">
             </div>
-            {% for error in form.codigo.errors %}
-                <div class="text-danger small">{{ error }}</div>
-            {% endfor %}
         </div>
         <div class="mb-4">
-            <label class="form-label fw-semibold" for="{{ form.dni.id_for_label }}">
+            <label class="form-label fw-semibold" for="id_dni">
                 DNI <span class="text-danger">*</span>
             </label>
             <div class="input-group input-group-lg">
                 <span class="input-group-text"><i class="bi bi-credit-card"></i></span>
-                {{ form.dni }}
+                <input type="text" name="dni" id="id_dni" class="form-control"
+                       placeholder="Documento nacional de identidad" maxlength="8" required
+                       value="{{ datos.dni }}">
             </div>
-            {% for error in form.dni.errors %}
-                <div class="text-danger small">{{ error }}</div>
-            {% endfor %}
         </div>
         <button type="submit" class="btn btn-primary btn-auth">
             <i class="bi bi-check-circle"></i> Verificar datos

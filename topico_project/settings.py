@@ -43,16 +43,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # Librerías de terceros
-    'rest_framework',
-    'rest_framework.authtoken',
     # Aplicaciones del proyecto
     'accounts',
     'pacientes',
     'atenciones',
     'inventario',
     'reportes',
-    'api_rest',
     'portal',
 ]
 
@@ -87,6 +83,9 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'topico_project.wsgi.application'
+
+# Modelo de usuario personalizado con rol propio del dominio (ROL_CHOICES)
+AUTH_USER_MODEL = 'accounts.CustomUser'
 
 
 # Database
@@ -238,21 +237,3 @@ EMAIL_USE_TLS = os.environ.get('DJANGO_EMAIL_USE_TLS', 'True') == 'True'
 EMAIL_HOST_USER = os.environ.get('DJANGO_EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('DJANGO_EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.environ.get('DJANGO_DEFAULT_FROM_EMAIL', 'Tópico UNH <topico@unh.edu.pe>')
-
-
-# --- Django REST Framework ---
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
-    ],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
-    ],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 20,
-    'DEFAULT_FILTER_BACKENDS': [
-        'rest_framework.filters.SearchFilter',
-        'rest_framework.filters.OrderingFilter',
-    ],
-}

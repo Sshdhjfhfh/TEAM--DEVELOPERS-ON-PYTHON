@@ -1,28 +1,18 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from django.contrib.auth.models import User
 
-from .models import Profile
-
-
-@admin.register(Profile)
-class ProfileAdmin(admin.ModelAdmin):
-    """Administración de perfiles en el sitio de administración."""
-    list_display = ('user', 'role', 'colegiatura', 'telefono')
-    list_filter = ('role',)
-    search_fields = ('user__username', 'user__first_name', 'user__last_name', 'colegiatura')
+from .models import CustomUser
 
 
-class ProfileInline(admin.StackedInline):
-    """Muestra el perfil dentro del formulario del usuario."""
-    model = Profile
-    can_delete = False
-    verbose_name_plural = 'Perfil'
-
-
-class UserAdmin(BaseUserAdmin):
-    inlines = (ProfileInline,)
-
-
-admin.site.unregister(User)
-admin.site.register(User, UserAdmin)
+@admin.register(CustomUser)
+class CustomUserAdmin(BaseUserAdmin):
+    """Administración del usuario personalizado con rol del dominio."""
+    list_display = ('username', 'first_name', 'last_name', 'email', 'role', 'is_active')
+    list_filter = ('role', 'is_active', 'groups')
+    search_fields = ('username', 'first_name', 'last_name', 'email', 'colegiatura')
+    fieldsets = BaseUserAdmin.fieldsets + (
+        ('Rol y perfil', {'fields': ('role', 'colegiatura', 'telefono')}),
+    )
+    add_fieldsets = BaseUserAdmin.add_fieldsets + (
+        ('Rol y perfil', {'fields': ('role', 'colegiatura', 'telefono')}),
+    )

@@ -1,0 +1,82 @@
+﻿{% extends 'base.html' %}
+{% block title %}{{ titulo }} — Tópico UNH{% endblock %}
+{% block header %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body p-4">
+                {% if errores %}
+                    <div class="alert alert-danger py-2">
+                        <i class="bi bi-exclamation-triangle"></i> {{ errores }}
+                    </div>
+                {% endif %}
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="id_username">Nombre de usuario <span class="text-danger">*</span></label>
+                            <input type="text" name="username" id="id_username" class="form-control" maxlength="150"
+                                   value="{% if datos %}{{ datos.username }}{% elif usuario %}{{ usuario.username }}{% endif %}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="id_role">Rol <span class="text-danger">*</span></label>
+                            <select name="role" id="id_role" class="form-select" required>
+                                {% for value, label in roles %}
+                                    <option value="{{ value }}"
+                                            {% if datos and datos.role == value %}selected{% elif not datos and usuario and usuario.role == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="id_first_name">Nombres</label>
+                            <input type="text" name="first_name" id="id_first_name" class="form-control" maxlength="100"
+                                   value="{% if datos %}{{ datos.first_name }}{% elif usuario %}{{ usuario.first_name }}{% endif %}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="id_last_name">Apellidos</label>
+                            <input type="text" name="last_name" id="id_last_name" class="form-control" maxlength="100"
+                                   value="{% if datos %}{{ datos.last_name }}{% elif usuario %}{{ usuario.last_name }}{% endif %}">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="id_email">Correo electrónico</label>
+                        <input type="email" name="email" id="id_email" class="form-control"
+                               value="{% if datos %}{{ datos.email }}{% elif usuario %}{{ usuario.email }}{% endif %}">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="id_colegiatura">N° de colegiatura</label>
+                            <input type="text" name="colegiatura" id="id_colegiatura" class="form-control" maxlength="30"
+                                   value="{% if datos %}{{ datos.colegiatura }}{% elif usuario %}{{ usuario.colegiatura }}{% endif %}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label" for="id_telefono">Teléfono</label>
+                            <input type="text" name="telefono" id="id_telefono" class="form-control" maxlength="20"
+                                   value="{% if datos %}{{ datos.telefono }}{% elif usuario %}{{ usuario.telefono }}{% endif %}">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="id_password">Contraseña</label>
+                        <input type="password" name="password" id="id_password" class="form-control"
+                               autocomplete="new-password">
+                        <div class="form-text">{% if usuario %}Solo se completa si desea cambiarla.{% else %}Obligatoria al crear el usuario.{% endif %}</div>
+                    </div>
+                    <div class="form-check form-switch mb-3">
+                        <input type="checkbox" name="is_active" id="id_is_active" class="form-check-input"
+                               {% if datos and datos.is_active == 'on' or not datos and usuario and usuario.is_active %}checked{% endif %}>
+                        <label class="form-check-label" for="id_is_active">Cuenta activa</label>
+                    </div>
+                    <div class="d-flex gap-2 mt-3">
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Guardar</button>
+                        <a href="{% url 'accounts:lista_usuarios' %}" class="btn btn-outline-secondary">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

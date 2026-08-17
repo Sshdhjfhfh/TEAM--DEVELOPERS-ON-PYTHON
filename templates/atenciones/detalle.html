@@ -80,18 +80,22 @@
                 <form method="post" action="{% url 'atenciones:agregar_receta' atencion.pk %}" class="row g-2 align-items-end">
                     {% csrf_token %}
                     <div class="col-md-4">
-                        {{ receta_form.medicamento.label_tag }}
-                        {{ receta_form.medicamento }}
-                        {{ receta_form.medicamento.errors }}
+                        <label class="form-label" for="id_receta_medicamento">Medicamento <span class="text-danger">*</span></label>
+                        <select name="medicamento" id="id_receta_medicamento" class="form-select" required>
+                            <option value="">Seleccione...</option>
+                            {% for med in medicamentos %}
+                                <option value="{{ med.pk }}">{{ med.nombre }} ({{ med.stock_actual }} {{ med.unidad }})</option>
+                            {% endfor %}
+                        </select>
                     </div>
                     <div class="col-md-2">
-                        {{ receta_form.cantidad.label_tag }}
-                        {{ receta_form.cantidad }}
-                        {{ receta_form.cantidad.errors }}
+                        <label class="form-label" for="id_receta_cantidad">Cantidad <span class="text-danger">*</span></label>
+                        <input type="number" name="cantidad" id="id_receta_cantidad" class="form-control" min="1" required>
                     </div>
                     <div class="col-md-4">
-                        {{ receta_form.indicaciones.label_tag }}
-                        {{ receta_form.indicaciones }}
+                        <label class="form-label" for="id_receta_indicaciones">Indicaciones</label>
+                        <input type="text" name="indicaciones" id="id_receta_indicaciones" class="form-control"
+                               placeholder="Ej.: 1 tableta cada 8 horas por 5 días">
                     </div>
                     <div class="col-md-2">
                         <button type="submit" class="btn btn-primary w-100">

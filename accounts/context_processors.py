@@ -1,6 +1,3 @@
-from accounts.models import Profile
-
-
 def permisos_roles(request):
     """Expone permisos por rol a todas las plantillas.
 
@@ -10,14 +7,11 @@ def permisos_roles(request):
     puede_clinico = False
     puede_inventario = False
     if request.user.is_authenticated:
-        rol = getattr(request.user.profile, 'role', None)
+        rol = getattr(request.user, 'role', None)
         puede_clinico = rol in ('ADMIN', 'MEDICO', 'ENFERMERO')
         puede_inventario = rol in ('ADMIN', 'FARMACEUTICO')
     return {
         'puede_clinico': puede_clinico,
         'puede_inventario': puede_inventario,
-        'es_estudiante': (
-            request.user.is_authenticated
-            and getattr(request.user.profile, 'role', None) == Profile.Role.ESTUDIANTE
-        ),
+        'es_estudiante': request.user.is_authenticated and getattr(request.user, 'role', None) == 'ESTUDIANTE',
     }

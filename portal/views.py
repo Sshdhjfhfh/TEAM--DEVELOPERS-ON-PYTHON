@@ -5,21 +5,35 @@ completado de datos), el panel del estudiante, la reserva de citas y la
 agenda del personal de salud.
 """
 
+from datetime import datetime
+
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 
 from accounts.decorators import ROLES_AGENDA_CITAS, rol_requerido
+from accounts.models import CustomUser
 from atenciones.models import Atencion
+from pacientes.models import Paciente
 
-from .forms import CitaForm, CompletarRegistroForm, ValidarCodigoForm
 from .models import Cita, Estudiante
 
 SESION_ESTUDIANTE = 'portal_estudiante_id'
+
+
+def _error_para_mensaje(exc):
+    """Convierte un ValidationError en un mensaje legible."""
+    if hasattr(exc, 'message_dict'):
+        return '; '.join(
+            f'{campo}: {" ".join(errs)}' for campo, errs in exc.message_dict.items()
+        )
+    return '; '.join(str(e) for e in exc.messages)
 
 
 def _notificar_cita(estudiante, asunto, cuerpo):
@@ -47,11 +61,9 @@ def _estudiante_de_usuario(usuario):
 
 
 def _es_estudiante(usuario):
-    perfil = _perfil(usuario)
     return (
         usuario.is_authenticated
-        and perfil is not None
-        and perfil.es_estudiante
+        and usuario.es_estudiante
         and _estudiante_de_usuario(usuario) is not None
     )
 
@@ -83,11 +95,34 @@ def validar_codigo(request):
     """Paso 1 del registro: verificar código de matrícula y DNI en el padrón."""
     if request.user.is_authenticated:
         return redirect('portal:inicio')
-    form = ValidarCodigoForm(request.POST or None)
-    if request.method == 'POST' and form.is_valid():
-        request.session[SESION_ESTUDIANTE] = form.cleaned_data['estudiante'].pk
-        return redirect('portal:completar_registro')
-    return render(request, 'portal/validar_codigo.html', {'form': form})
+    errores = None
+    if request.method == 'POST':
+        codigo = request.POST.get('codigo', '').strip()
+        dni = request.POST.get('dni', '').strip()
+        try:
+            estudiante = Estudiante.objects.get(codigo=codigo)
+        except Estudiante.DoesNotExist:
+            estudiante = None
+            errores = (
+                'El código ingresado no figura en el padrón de estudiantes. '
+                'Verifique el código o acérquese al Tópico.'
+            )
+        if estudiante and estudiante.dni != dni:
+            errores = 'El DNI no coincide con el código de estudiante.'
+        elif estudiante and not estudiante.matriculado:
+            errores = (
+                'El estudiante no cuenta con matrícula activa en el presente semestre. '
+                'Solo los estudiantes matriculados pueden registrarse.'
+            )
+        elif estudiante and estudiante.tiene_cuenta:
+            errores = 'Este código ya tiene una cuenta registrada. Inicie sesión con su código.'
+        if not errores and estudiante:
+            request.session[SESION_ESTUDIANTE] = estudiante.pk
+            return redirect('portal:completar_registro')
+    return render(request, 'portal/validar_codigo.html', {
+        'errores': errores,
+        'datos': request.POST if request.method == 'POST' else None,
+    })
 
 
 def completar_registro(request):
@@ -103,20 +138,64 @@ def completar_registro(request):
         messages.error(request, 'El código ya no es válido para completar el registro.')
         return redirect('portal:validar_codigo')
 
-    form = CompletarRegistroForm(request.POST or None, estudiante=estudiante)
-    if request.method == 'POST' and form.is_valid():
-        user = form.save()
-        login(request, user)
-        request.session.pop(SESION_ESTUDIANTE, None)
-        messages.success(
-            request,
-            f'Bienvenido/a, {estudiante.nombres}. Su cuenta se creó correctamente.',
-        )
-        return redirect('portal:inicio')
+    errores = None
+    if request.method == 'POST':
+        password1 = request.POST.get('password1', '')
+        password2 = request.POST.get('password2', '')
+        fecha_nacimiento = request.POST.get('fecha_nacimiento', '')
+        sexo = request.POST.get('sexo', '')
+        telefono = request.POST.get('telefono', '').strip()
+        if not password1 or not password2:
+            errores = 'Debe definir una contraseña y confirmarla.'
+        elif password1 != password2:
+            errores = 'Las contraseñas no coinciden.'
+        else:
+            try:
+                validate_password(password1, user=None)
+                user = CustomUser.objects.create_user(
+                    username=estudiante.codigo,
+                    first_name=estudiante.nombres,
+                    last_name=estudiante.apellidos,
+                    email=estudiante.correo_institucional,
+                    password=password1,
+                )
+                user.role = CustomUser.Role.ESTUDIANTE
+                user.telefono = telefono
+                user.save()
+                paciente, _ = Paciente.objects.get_or_create(
+                    dni=estudiante.dni,
+                    defaults={
+                        'nombres': estudiante.nombres,
+                        'apellidos': estudiante.apellidos,
+                        'fecha_nacimiento': datetime.strptime(fecha_nacimiento, '%Y-%m-%d').date(),
+                        'sexo': sexo,
+                        'telefono': telefono,
+                        'registrado_por': user,
+                    },
+                )
+                estudiante.user = user
+                estudiante.paciente = paciente
+                estudiante.save(update_fields=['user', 'paciente'])
+                login(request, user)
+                request.session.pop(SESION_ESTUDIANTE, None)
+                messages.success(
+                    request,
+                    f'Bienvenido/a, {estudiante.nombres}. Su cuenta se creó correctamente.',
+                )
+                return redirect('portal:inicio')
+            except ValidationError as exc:
+                errores = _error_para_mensaje(exc)
+            except ValueError as exc:
+                errores = str(exc)
     return render(
         request,
         'portal/completar_registro.html',
-        {'form': form, 'estudiante': estudiante},
+        {
+            'estudiante': estudiante,
+            'errores': errores,
+            'sexos': Paciente.Sexo.choices,
+            'datos': request.POST if request.method == 'POST' else None,
+        },
     )
 
 
@@ -140,33 +219,50 @@ def reservar_cita(request):
     estudiante = _estudiante_de_usuario(request.user)
     if estudiante is None:
         return redirect('portal:inicio')
-    fecha = request.GET.get('fecha')
-    form = CitaForm(
-        request.POST or None,
-        estudiante=estudiante,
-        initial={'fecha': fecha} if fecha else None,
-    )
-    if request.method == 'POST' and form.is_valid():
-        cita = form.save(commit=False)
-        cita.estudiante = estudiante
-        cita.save()
-        messages.success(
-            request,
-            'Cita reservada para el '
-            f'{cita.fecha:%d/%m/%Y} a las {cita.hora:%H:%M}. '
-            'Preséntese al Tópico a la hora indicada.',
-        )
-        _notificar_cita(
-            estudiante,
-            'Cita reservada en el Tópico UNH',
-            f'Hola {estudiante.nombres},\n\n'
-            f'Su cita fue reservada para el {cita.fecha:%d/%m/%Y} '
-            f'a las {cita.hora:%H:%M}.\nMotivo: {cita.motivo}\n\n'
-            'Preséntese al Tópico de la universidad a la hora indicada.\n'
-            'Atentamente, Tópico UNH.',
-        )
-        return redirect('portal:mis_citas')
-    return render(request, 'portal/reservar_cita.html', {'form': form})
+    fecha = request.GET.get('fecha') or request.POST.get('fecha') or ''
+    slots = Cita.slots_disponibles(fecha) if fecha else Cita.slots_del_dia()
+    errores = None
+    if request.method == 'POST':
+        try:
+            fecha_reserva = datetime.strptime(fecha, '%Y-%m-%d').date()
+            hora = datetime.strptime(request.POST.get('hora', ''), '%H:%M').time()
+            motivo = request.POST.get('motivo', '').strip()
+            cita = Cita(estudiante=estudiante, fecha=fecha_reserva, hora=hora, motivo=motivo)
+            cita.clean()
+            if hora not in Cita.slots_disponibles(fecha_reserva):
+                raise ValidationError({'hora': 'El horario seleccionado ya no está disponible.'})
+            if estudiante.citas.filter(
+                estado__in=[Cita.Estado.PENDIENTE, Cita.Estado.CONFIRMADA],
+            ).exists():
+                raise ValidationError(
+                    'Ya tiene una cita activa. Cancele la cita vigente para reservar otra.'
+                )
+            cita.save()
+            messages.success(
+                request,
+                'Cita reservada para el '
+                f'{cita.fecha:%d/%m/%Y} a las {cita.hora:%H:%M}. '
+                'Preséntese al Tópico a la hora indicada.',
+            )
+            _notificar_cita(
+                estudiante,
+                'Cita reservada en el Tópico UNH',
+                f'Hola {estudiante.nombres},\n\n'
+                f'Su cita fue reservada para el {cita.fecha:%d/%m/%Y} '
+                f'a las {cita.hora:%H:%M}.\nMotivo: {cita.motivo}\n\n'
+                'Preséntese al Tópico de la universidad a la hora indicada.\n'
+                'Atentamente, Tópico UNH.',
+            )
+            return redirect('portal:mis_citas')
+        except (ValueError, ValidationError) as exc:
+            errores = _error_para_mensaje(exc) if isinstance(exc, ValidationError) else str(exc)
+    return render(request, 'portal/reservar_cita.html', {
+        'slots': slots,
+        'fecha': fecha,
+        'hoy': timezone.localdate().isoformat(),
+        'errores': errores,
+        'datos': request.POST if request.method == 'POST' else None,
+    })
 
 
 @login_required
