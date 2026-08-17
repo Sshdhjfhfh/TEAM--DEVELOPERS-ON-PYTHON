@@ -33,7 +33,7 @@ def login_usuario(request):
             next_url = request.GET.get('next') or 'dashboard'
             return redirect(next_url)
         error = 'Usuario o contraseña incorrectos. Verifique sus credenciales.'
-    return render(request, 'accounts/login.html', {'error': error})
+    return render(request, 'registration/login.html', {'error': error})
 
 
 @require_http_methods(['POST'])
@@ -108,7 +108,7 @@ def lista_usuarios(request):
         )
     return render(
         request,
-        'accounts/usuario_lista.html',
+        'accounts/usuario_list.html',
         {'usuarios': usuarios.distinct(), 'q': q},
     )
 

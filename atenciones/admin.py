@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Atencion, SignosVitales
+from .models import Atencion, RecetaMedicamento, SignosVitales
 
 
 class SignosVitalesInline(admin.StackedInline):
@@ -20,3 +20,16 @@ class AtencionAdmin(admin.ModelAdmin):
 @admin.register(SignosVitales)
 class SignosVitalesAdmin(admin.ModelAdmin):
     list_display = ('atencion', 'temperatura', 'presion_arterial', 'pulso', 'saturacion_oxigeno', 'registrado_en')
+    search_fields = ('atencion__paciente__dni', 'atencion__paciente__nombres', 'atencion__paciente__apellidos')
+
+
+@admin.register(RecetaMedicamento)
+class RecetaMedicamentoAdmin(admin.ModelAdmin):
+    list_display = ('atencion', 'medicamento', 'cantidad', 'indicaciones', 'registrado_en')
+    search_fields = (
+        'atencion__paciente__dni',
+        'atencion__paciente__nombres',
+        'atencion__paciente__apellidos',
+        'medicamento__nombre',
+    )
+    list_select_related = ('atencion', 'medicamento')

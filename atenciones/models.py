@@ -98,6 +98,8 @@ class RecetaMedicamento(models.Model):
         verbose_name = 'Ítem de receta'
         verbose_name_plural = 'Ítems de receta'
         ordering = ['registrado_en']
+        # Un mismo medicamento no puede repetirse en la receta de una atención.
+        unique_together = ('atencion', 'medicamento')
 
     def __str__(self):
         return f'{self.cantidad} x {self.medicamento.nombre} (atención #{self.atencion_id})'
