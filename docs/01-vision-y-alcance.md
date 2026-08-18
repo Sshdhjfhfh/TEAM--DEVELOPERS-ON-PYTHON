@@ -29,34 +29,34 @@ Tópico UNH.
 
 ### Objetivos específicos
 1. Registrar y consultar pacientes con validación de DNI e historial de atenciones.
-2. Gestionar atenciones médicas con clasificación de triage de 5 niveles y registro de signos vitales.
+2. Gestionar atenciones médicas con clasificación de triage de 5 niveles, registro
+   de signos vitales y recetas médicas.
 3. Controlar el inventario de medicamentos e insumos con alertas de stock crítico.
-4. Generar reportes e indicadores (dashboard) para la toma de decisiones.
-5. Exponer una API REST para futuras integraciones (app móvil, sistemas UNH).
-6. Ofrecer un portal de estudiantes que valide la matrícula contra el padrón UNH y
+4. Generar reportes e indicadores (dashboard) con exportación CSV e imprimible.
+5. Ofrecer un portal de estudiantes que valide la matrícula contra el padrón UNH y
    permita reservar citas de atención en línea.
 
 ## 4. Alcance
 
 ### Incluido (versión actual)
-- Autenticación de usuarios con roles (Médico, Enfermero/a, Farmacéutico/a, Administrador).
+- Autenticación de usuarios con rol propio del dominio (Médico, Enfermero/a,
+  Farmacéutico/a, Administrador, Estudiante), retiro lógico y CRUD de usuarios
+  web por el administrador.
 - CRUD de pacientes con búsqueda por DNI/nombre.
-- Registro de atenciones con triage, estados y signos vitales.
+- Registro de atenciones con triage, estados, signos vitales y recetas médicas.
 - Cola de triage priorizada en tiempo real.
 - Inventario con entradas/salidas/ajustes y stock automático.
-- Dashboard y reportes por periodo (hoy / 7 días / 30 días).
-- API REST autenticada con token.
+- Dashboard y reportes por periodo (hoy / 7 días / 30 días) con exportación CSV
+  e imprimible (PDF).
 - Portal de estudiantes: registro validado contra el padrón de matriculados,
   autocompletado de datos académicos y reserva de citas con horario del Tópico.
 - Agenda de citas para el personal y conversión de una cita en atención médica.
+- Notificaciones por correo y recordatorios automáticos de citas.
 - Panel de administración de Django.
 
 ### Excluido (futuras versiones)
-- Exportación de reportes a PDF/Excel (Sprint 3).
-- Permisos granulares por rol en cada vista (Sprint 3).
-- Derivación formal a centros de salud externos (Sprint 3).
-- Notificaciones por correo/SMS (Sprint 4).
-- Despliegue en producción con PostgreSQL (Sprint 4).
+- Derivación formal a centros de salud externos (queda como estado de la
+  atención: `DERIVADO`).
 - Historia clínica electrónica completa (fuera de alcance del ciclo).
 
 ## 5. Usuarios / interesados
@@ -68,7 +68,6 @@ Tópico UNH.
 | Médicos | Consultar historial, registrar diagnóstico y tratamiento |
 | Farmacéutico | Controlar stock y movimientos de medicamentos |
 | Jefatura del Tópico | Reportes e indicadores de gestión |
-| Oficina de TI UNH | Integración futura vía API REST |
 
 ## 6. Restricciones y supuestos
 

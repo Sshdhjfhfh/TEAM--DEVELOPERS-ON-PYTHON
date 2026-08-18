@@ -73,14 +73,16 @@ flujo completo de registro en el portal.
 | `DJANGO_SECRET_KEY` | (clave de desarrollo) | Clave secreta de Django |
 | `DJANGO_DEBUG` | `True` | Modo depuración |
 | `DJANGO_ALLOWED_HOSTS` | `127.0.0.1,localhost` | Hosts permitidos, separados por coma |
-| `DB_ENGINE` | `sqlite` | `postgres` para usar PostgreSQL |
-| `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT` | vacíos | Credenciales de PostgreSQL (solo con `DB_ENGINE=postgres`) |
+| `DATABASE_URL` | vacía | Cadena `postgresql://...` de Neon; si existe, se usa PostgreSQL |
+| `POSTGRES_URL` / `POSTGRES_*` | vacías | Alternativas inyectadas por la integración de Vercel+Neon |
+| `DB_ENGINE` | `sqlite` | `postgres` fuerza PostgreSQL |
+| `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT` | vacíos | Credenciales PostgreSQL (solo con `DB_ENGINE=postgres`) |
 | `DJANGO_EMAIL_BACKEND`, `DJANGO_EMAIL_HOST`, `DJANGO_EMAIL_HOST_USER`, `DJANGO_EMAIL_HOST_PASSWORD` | consola | Configuración SMTP de notificaciones |
 
 ## 5. Pruebas
 
 ```bash
-python -m pytest          # ejecuta las 83 pruebas
+python -m pytest          # ejecuta las 82 pruebas
 python -m pytest -v       # modo detallado
 python manage.py check    # verifica la configuración
 ```
@@ -107,52 +109,40 @@ Programarlo en Windows (Programador de tareas) o con cron en Linux:
 
 | Problema | Solución |
 |---|---|
-| `ModuleNotFoundError: No module named 'rest_framework'` | Activar el entorno virtual (`.\venv\Scripts\Activate.ps1`) y ejecutar `pip install -r requirements.txt`. |
+| `ModuleNotFoundError: No module named 'django'` | Activar el entorno virtual (`.\venv\Scripts\Activate.ps1`) y ejecutar `pip install -r requirements.txt`. |
 | La consola muestra caracteres como `?` al correr comandos | Es solo la codificación de la consola; los archivos están en UTF-8. Ejecutar `chcp 65001` para mostrar correctamente. |
 | `migrate` falla con la base de datos | Eliminar `db.sqlite3` (solo desarrollo) y ejecutar `python manage.py migrate` y `python manage.py seed_demo`. |
 | Puertos ocupados | Usar otro puerto: `python manage.py runserver 127.0.0.1:8001`. |
 | No se ven los estilos/logos | Ejecutar `python manage.py collectstatic` y verificar que `static/` contenga `css/estilos.css` e `img/unh-logo.png`. |
 
-## 8. Despliegue (planificado, Sprint 6)
+## 8. Despliegue en producción (Vercel + Neon PostgreSQL)
 
-La migración a PostgreSQL se hará configurando `DATABASES` en `settings.py` vía
-variables de entorno (`DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`),
-desactivando `DEBUG`, definiendo `DJANGO_ALLOWED_HOSTS` y sirviendo los
-estáticos con `collectstatic`.
+El proyecto ya está desplegado en **Vercel** (`https://topico-unh.vercel.app`)
+con **Neon PostgreSQL** como base de datos.
 
-### 8.1 Despliegue en Vercel
+> Nota: Vercel ejecuta el proyecto en funciones serverless, por lo que **no
+> funciona con SQLite** (el disco es efímero). Requiere PostgreSQL.
 
-Vercel ejecuta el proyecto en funciones serverless, por lo que **no funciona
-con SQLite** (el disco es efímero). Requiere PostgreSQL.
+### 8.1 Despliegue desde cero
 
-1. **Crear una base de datos gratuita** en [Neon](https://neon.tech) o
-   [Supabase](https://supabase.com). Copiar los datos de conexión
-   (`host`, `dbname`, `user`, `password`, `port`).
-2. **Configurar el proyecto en Vercel** conectándolo a este repositorio
-   de GitHub (Vercel detecta `vercel.json`).
+1. **Crear una base de datos** en [Neon](https://neon.tech). Copiar la cadena
+   de conexión (`DATABASE_URL`) o los datos (`host`, `dbname`, `user`,
+   `password`, `port`).
+2. **Configurar el proyecto en Vercel** conectándolo al repositorio de GitHub
+   (Vercel detecta `vercel.json`).
 3. **Definir variables de entorno** en Vercel (Project Settings → Environment
    Variables):
-   - `DB_ENGINE=postgres`
-   - `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`
+   - `DATABASE_URL` (o `POSTGRES_URL`) — cadena de conexión de Neon
    - `DJANGO_SECRET_KEY` (una clave aleatoria segura)
    - `DJANGO_DEBUG=False`
    - `DJANGO_ALLOWED_HOSTS=<tu-dominio>.vercel.app`
    - `DJANGO_EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend` y las
      credenciales SMTP reales si se quiere correo de notificaciones.
 4. **Primer despliegue**: las migraciones se ejecutan automáticamente por el
-   `buildCommand` de `vercel.json`. Después se recomienda cargar los datos de
-   demostración una vez con un comando de consola (ver paso 5).
-5. **(Opcional) Cargar datos demo** en producción: como Vercel no permite
-   ejecutar comandos de gestión directamente, se puede crear un superusuario
-   temporalmente con `python manage.py createsuperuser` local apuntando a la
-   misma BD, o usar `python manage.py seed_demo` desde una copia del proyecto
-   con las mismas variables de entorno.
+   `buildCommand` de `vercel.json`.
+5. **(Opcional) Cargar datos demo** en producción: ejecutar
+   `python manage.py seed_demo` desde una copia local del proyecto con las
+   mismas variables de entorno, apuntando a la base de datos de Neon.
 
 > Nota: en Vercel el correo de consola no se muestra; para ver correos es
 > obligatorio configurar un SMTP real.
-
-### 8.2 Alternativa recomendada (VPS/Render)
-
-Como Vercel es serverless y sin estado, para un sistema con sesiones y citas
-se recomienda como alternativa **Render** o una **VPS** con PostgreSQL y
-`gunicorn`, ejecutando migraciones y `recordar_citas` mediante un cron.

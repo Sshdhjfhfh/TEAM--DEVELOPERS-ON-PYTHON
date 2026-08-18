@@ -3,72 +3,82 @@
 ## 1. Diagrama entidad–relación (lógico)
 
 ```
-┌──────────────┐ 1     1 ┌──────────────┐
-│     User     │─────────│   Profile    │
-│  (Django)    │         │ role         │
-└──────┬───────┘         │ colegiatura  │
-       │                 │ telefono     │
-       │                 └──────────────┘
-       │ 1
-       │        n ┌──────────────┐ 1        n ┌──────────────────┐
-       ├──────────│   Paciente   │─────────────│     Atencion     │
-       │(registró)│ dni (único)  │             │ nivel_triage     │
-       │          │ nombres      │             │ estado           │
-       │          │ apellidos    │             │ motivo_consulta  │
-       │          │ tipo_sangre  │             │ diagnostico      │
-       │          │ alergias     │             │ tratamiento      │
-       │          └──────────────┘             └───────┬──────────┘
-       │ 1                                      1      │ 1
-       │ (médico) ─────────────────────────────────────┤
-       │                                               │
-       │                                       ┌───────▼──────────┐
-       │                                       │  SignosVitales   │
-       │                                       │ temperatura      │
-       │                                       │ presión S/D      │
-       │                                       │ pulso, FR, SpO2  │
-       │                                       │ peso, talla      │
-       │                                       └──────────────────┘
-│ 1
-│        n ┌──────────────────────┐ n       1 ┌──────────────┐
-└──────────│ MovimientoInventario │───────────│ Medicamento  │
-          │ tipo (E/S/Ajuste)    │           │ stock_actual │
-          │ cantidad             │           │ stock_minimo │
-          │ atencion (opcional)  │           │ categoria    │
-          └──────────────────────┘           └──────────────┘
+┌──────────────────┐ 1      n ┌──────────────────┐
+│    CustomUser    │──────────│     Paciente     │
+│   (ROL_CHOICES)  │(registró)│ dni (único)      │
+└────────┬─────────┘          │ nombres/apellidos│
+         │                    │ tipo_sangre      │
+         │ 1 (médico)         │ alergias         │
+         │ n ┌──────────────┐ │ activo (baja)    │
+         ├────│   Atencion   │ │                  │
+         │   │ nivel_triage  │ └────────┬─────────┘
+         │   │ estado        │          │ 1
+         │   │ motivo_consulta│          │ n
+         │   │ diagnostico   │ ┌────────▼─────────┐
+         │   │ tratamiento   │ │      Cita        │
+         │   └──────┬────────┘ │ estudiante (FK)  │
+         │          │ 1        │ fecha/hora       │
+         │          │ 1        └────────┬─────────┘
+         │   ┌──────▼─────────┐         │ 0..1
+         │   │ SignosVitales  │         │
+         │   │ temperatura    │ ┌───────▼────────┐
+         │   │ presión S/D    │ │ (vinculación)  │
+         │   │ pulso, FR, SpO2│ └────────────────┘
+         │   │ peso, talla    │
+         │   └────────────────┘
+         │ 1     n ┌──────────────────────┐ n       1 ┌──────────────┐
+         └────────│ MovimientoInventario │───────────│ Medicamento  │
+                 │ tipo (E/S/Ajuste)    │           │ stock_actual │
+                 │ cantidad             │           │ stock_minimo │
+                 │ atencion (opcional)  │           │ categoria    │
+                 └──────────────────────┘           └──────────────┘
+                       n       1 ┌──────────────┐
+              RecetaMedicamento──│  Medicamento │
+              (atencion, medicamento)           │
+                                 └──────────────┘
+               UNIQUE (atencion, medicamento)
 
-User ──1──── 1──── Estudiante (padrón)
-User ──1──── 1──── Paciente (ficha de estudiante)
+CustomUser ──1──── 1──── Estudiante (padrón)
+CustomUser ──1──── 1──── Paciente (ficha de estudiante)
 Estudiante ──1──── n──── Cita ────0..1──── Atencion
 ```
 
 ## 2. Entidades
 
-### accounts.Profile
+### accounts.CustomUser
+`AUTH_USER_MODEL` del proyecto. Hereda de `AbstractUser` y agrega el rol propio
+del dominio. El **retiro lógico** se implementa con el atributo `activo`.
+
 | Campo | Tipo | Detalle |
 |---|---|---|
-| user | OneToOne → User | Se crea automáticamente por señal `post_save` |
-| role | CharField (choices) | `MEDICO`, `ENFERMERO`, `FARMACEUTICO`, `ADMIN`, `ESTUDIANTE` |
+| username / first_name / last_name / email | (AbstractUser) | Estándar de Django |
+| rol | CharField (choices `ROL_CHOICES`) | `ADMIN`, `MEDICO`, `ENFERMERO`, `FARMACEUTICO`, `ESTUDIANTE` |
 | colegiatura | CharField(30) | Opcional |
 | telefono | CharField(20) | Opcional |
+| activo | BooleanField (defecto True) | Baja lógica; se usa en lugar de `is_active` para no romper la autenticación |
+| es_estudiante | property | True si `rol == ESTUDIANTE` |
+
+Los usuarios se crean con `create_user()` (gestión web en `accounts/`) y con
+`seed_demo`. No hay modelo `Profile`.
 
 ### pacientes.Paciente
 | Campo | Tipo | Detalle |
 |---|---|---|
 | nombres / apellidos | CharField(100) | Obligatorios |
-| dni | CharField(8) único | Solo dígitos (validado en `clean()`), mín. 8 |
+| dni | CharField(8) único | Solo dígitos (validado), mín. 8 |
 | fecha_nacimiento | DateField | Se deriva la propiedad `edad` |
 | sexo | CharField choices | `M`, `F` |
 | tipo_sangre | CharField choices | `O±`, `A±`, `B±`, `AB±`, `DES` |
 | alergias | TextField | Opcional (se resalta en la ficha) |
 | activo | BooleanField | Baja lógica |
-| registrado_por | FK → User (SET_NULL) | Trazabilidad |
+| registrado_por | FK → CustomUser (SET_NULL) | Trazabilidad |
 | fecha_registro | DateTimeField auto | — |
 
 ### atenciones.Atencion
 | Campo | Tipo | Detalle |
 |---|---|---|
 | paciente | FK → Paciente (CASCADE) | related_name `atenciones` |
-| medico | FK → User (SET_NULL) | Opcional |
+| medico | FK → CustomUser (SET_NULL) | Opcional |
 | fecha_atencion | DateTimeField auto | — |
 | motivo_consulta | TextField | Obligatorio |
 | anamnesis / diagnostico / tratamiento / observaciones | TextField | Opcionales |
@@ -80,6 +90,17 @@ OneToOne con `Atencion` (related_name `signos_vitales`). Campos numéricos
 opcionales: temperatura (°C), presión sistólica/diastólica (mmHg), pulso (lpm),
 frecuencia respiratoria (rpm), saturación de oxígeno (%, 1–100), peso (kg),
 talla (cm). Propiedad `presion_arterial` = `"120/80"`.
+
+### atenciones.RecetaMedicamento
+| Campo | Tipo | Detalle |
+|---|---|---|
+| atencion | FK → Atencion (CASCADE) | related_name `recetas` |
+| medicamento | FK → Medicamento (CASCADE) | related_name `recetas` |
+| cantidad | PositiveInteger | — |
+| indicaciones | TextField | Opcional |
+
+> **Restricción:** `unique_together = ('atencion', 'medicamento')` — el mismo
+> medicamento no puede repetirse en una misma atención.
 
 ### inventario.Medicamento
 | Campo | Tipo | Detalle |
@@ -98,12 +119,12 @@ talla (cm). Propiedad `presion_arterial` = `"120/80"`.
 | medicamento | FK → Medicamento (CASCADE) | related_name `movimientos` |
 | tipo | choices | `ENTRADA` (suma), `SALIDA` (resta y **valida stock**), `AJUSTE` (fija el stock) |
 | cantidad | PositiveInteger ≥ 1 | — |
-| usuario | FK → User (SET_NULL) | Asignado automáticamente en vistas y API |
+| usuario | FK → CustomUser (SET_NULL) | Asignado automáticamente en las vistas |
 | atencion | FK → Atencion (SET_NULL) | Opcional: vincula el consumo a una atención |
 
 > **Regla de negocio:** el stock del medicamento se actualiza dentro de
 > `MovimientoInventario.save()`; una salida mayor al stock disponible lanza
-> `ValidationError` y no se registra.
+> `ValidationError` y no se registra. La receta médica también descuenta stock.
 
 ### portal.Estudiante (padrón de matriculados)
 | Campo | Tipo | Detalle |
@@ -115,7 +136,7 @@ talla (cm). Propiedad `presion_arterial` = `"120/80"`.
 | ciclo | PositiveSmallInteger | Nivel académico del estudiante |
 | matriculado | BooleanField | Matrícula activa del semestre (si es falsa, no puede registrarse) |
 | correo_institucional | EmailField | Opcional |
-| user | OneToOne → User (SET_NULL) | Cuenta creada en el Paso 2; propiedad `tiene_cuenta` |
+| user | OneToOne → CustomUser (SET_NULL) | Cuenta creada en el Paso 2; propiedad `tiene_cuenta` |
 | paciente | OneToOne → Paciente (SET_NULL) | Ficha clínica vinculada al estudiante |
 
 ### portal.Cita
@@ -130,7 +151,7 @@ talla (cm). Propiedad `presion_arterial` = `"120/80"`.
 | atencion | OneToOne → Atencion (SET_NULL) | Se llena al convertir la cita en atención |
 
 > **Reglas de agenda:** cada estudiante solo puede tener una cita activa a la
-> vez; la `CitaForm` oculta los slots ocupados y hay un constraint único
+> vez; el formulario oculta los slots ocupados y hay un constraint único
 > `(fecha, hora)` para estados `PENDIENTE`/`CONFIRMADA`.
 
 ## 3. Convenciones

@@ -218,6 +218,10 @@ __marimo__/
 # Herramientas externas no relacionadas con el proyecto
 nemesis_v42.py
 
+# Archivos temporales de Office (PowerPoint/Word abiertos)
+~$*.pptx
+~$*.docx
+
 # Streamlit
 .streamlit/secrets.toml
 .vercel
